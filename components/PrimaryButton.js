@@ -15,12 +15,19 @@ export function PrimaryButton({
   textStyle,
   disabled = false,
   loading = false,
+  variant = "primary", // "primary" or "secondary" or "danger"
 }) {
   const buttonContent = () => {
     if (loading) {
       return <ActivityIndicator color={colors.text} size="small" />;
     }
-    return <Text style={[styles.buttonText, textStyle]}>{title}</Text>;
+    return <Text style={[styles.buttonText, textStyle, variant === "secondary" && styles.textSecondary, variant === "danger" && styles.textDanger]}>{title}</Text>;
+  };
+
+  const getButtonStyle = () => {
+    if (variant === "danger") return [styles.button, styles.dangerButton, disabled && styles.disabled];
+    if (variant === "secondary") return [styles.button, styles.secondaryButton, disabled && styles.disabled];
+    return [styles.button, style, disabled && styles.disabled];
   };
 
   return (
@@ -29,7 +36,7 @@ export function PrimaryButton({
       disabled={disabled || loading}
       activeOpacity={0.8}
     >
-      <View style={[styles.button, style, disabled && styles.disabled]}>
+      <View style={getButtonStyle()}>
         {buttonContent()}
       </View>
     </TouchableOpacity>
@@ -53,11 +60,27 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  secondaryButton: {
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.textMuted,
+    borderWidth: 1,
+  },
+  dangerButton: {
+    backgroundColor: colors.error,
+    borderColor: colors.error,
+    borderWidth: 1,
+  },
   buttonText: {
     color: colors.primary,
     fontWeight: "600",
     fontSize: 16,
     fontFamily: "Poppins_600SemiBold",
+  },
+  textSecondary: {
+    color: colors.textMuted,
+  },
+  textDanger: {
+    color: colors.surface,
   },
   disabled: {
     opacity: 0.6,
