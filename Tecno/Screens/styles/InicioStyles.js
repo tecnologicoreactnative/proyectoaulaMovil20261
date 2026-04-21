@@ -21,10 +21,6 @@ const styles = StyleSheet.create({
     color: '#1976D2',
     marginTop: 5,
   },
-  cuerpo: {
-    flex: 1,
-    marginTop: 30,
-  },
   subtitulo: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -43,6 +39,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  tarjeta: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 3 },
+  tituloEvento: { fontSize: 16, fontWeight: 'bold', color: '#1a1a2e', marginBottom: 6 },
+  infoEvento: { fontSize: 14, color: '#555', marginBottom: 2 },
+  input: { backgroundColor: '#fff', borderRadius: 10, padding: 12, marginBottom: 10, fontSize: 14, elevation: 2, color: '#333' },
+  vacio: { textAlign: 'center', color: '#888', marginTop: 40, fontSize: 15 },
 });
 
-export default styles;
+export default styles; 
