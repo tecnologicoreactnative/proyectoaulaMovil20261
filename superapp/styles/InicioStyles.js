@@ -8,9 +8,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.background,
     justifyContent: 'center',
     padding: 24,
-    
   },
-  
 
   emoji: {
     fontSize: 50,
@@ -29,6 +27,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.primary,
     marginTop: 6,
+    fontWeight: '500',
   },
 
   subtitle: {
@@ -36,10 +35,12 @@ export const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: 6,
   },
-    title: {
+
+  title: {
     textAlign: 'center',
     color: colors.text,
     marginTop: 6,
+    fontWeight: '700',
   },
 
   divider: {
@@ -59,13 +60,16 @@ export const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '700',
   },
-    logo: {
-  width: 175,
-  height: 175,
-  resizeMode: 'contain',
-  marginBottom: 20,
-  alignSelf: 'center',
-  marginTop: -200,
-}
 
+  logo: {
+    width: 175,
+    height: 175,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+
+    marginBottom: 15,
+
+    // 👇 ahora más seguro, sin empujar fuera de pantalla
+    marginTop: -60,
+  },
 });

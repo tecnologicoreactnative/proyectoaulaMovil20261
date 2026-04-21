@@ -8,6 +8,8 @@ import InicioScreen from '../screens/InicioScreen';
 import DetailsScreen from '../screens/DetailsScreen';
 import { AuthContexto } from '../contextos/AuthContexto';
 import SolicitudAdopcionScreen from '../screens/SolicitudAdopcionScreen';
+import MisSolicitudesScreen from '../screens/MisSolicitudesScreen';
+
 const Stack = createStackNavigator();
 
 const NavegacionStack = () => {
@@ -91,16 +93,21 @@ const NavegacionStack = () => {
       />
 
       
+<Stack.Screen
+  name="MisSolicitudes"
+  component={MisSolicitudesScreen}
+   options={{ headerShown: false }}
+/>
       <Stack.Screen
-        name="Mascotas"
-        component={MascotasScreen}
-        options={{ title: 'Mascotas en adopción 🐾' }}
-      />
+  name="Mascotas"
+  component={MascotasScreen}
+  options={{ headerShown: false }}
+/>
 
 <Stack.Screen
   name="SolicitudAdopcion"
   component={SolicitudAdopcionScreen}
-  options={{ title: 'Solicitud de adopción 🐾' }}
+  options={{ headerShown: false }} // 👈 ESTA ES LA CLAVE
 />
 
     </Stack.Navigator>

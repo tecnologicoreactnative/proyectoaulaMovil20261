@@ -4,6 +4,7 @@ import {
   Alert, KeyboardAvoidingView, ScrollView,
   Animated, ImageBackground, Image
 } from 'react-native';
+
 import { AuthContexto } from '../contextos/AuthContexto';
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -15,12 +16,19 @@ const LoginScreen = ({ navigation }) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [emailFocused, setEmailFocused] = useState(false);
   const [passFocused, setPassFocused] = useState(false);
+
   const { iniciarSesion } = useContext(AuthContexto);
 
+  // 👉 referencia pa brincar entre inputs
+  const passwordRef = useRef();
+
+  // 🎬 animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(40)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -37,8 +45,6 @@ const LoginScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.95,
@@ -53,6 +59,7 @@ const LoginScreen = ({ navigation }) => {
     }).start();
   };
 
+  // 🔥 LOGIN
   const handleLogin = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Completá todos los campos');
@@ -61,7 +68,8 @@ const LoginScreen = ({ navigation }) => {
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-                const user = userCredential.user;
+        const user = userCredential.user;
+
         iniciarSesion({
           nombre: user.displayName || 'Usuario',
         });
@@ -77,6 +85,7 @@ const LoginScreen = ({ navigation }) => {
       <KeyboardAvoidingView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll}>
 
+          {/* 🔥 HEADER */}
           <View style={styles.header}>
             <Image
               source={require('../assets/icono.png')}
@@ -86,6 +95,7 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.subtitle}>Iniciá sesión</Text>
           </View>
 
+          {/* 🔥 FORM */}
           <Animated.View
             style={{
               opacity: fadeAnim,
@@ -94,6 +104,7 @@ const LoginScreen = ({ navigation }) => {
           >
             <View style={styles.form}>
 
+              {/* 📧 EMAIL */}
               <Text style={styles.label}>Correo</Text>
               <TextInput
                 placeholder="tu@correo.com"
@@ -105,10 +116,14 @@ const LoginScreen = ({ navigation }) => {
                   components.input,
                   emailFocused && components.inputFocused
                 ]}
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current.focus()}
               />
 
+              {/* 🔒 PASSWORD */}
               <Text style={styles.label}>Contraseña</Text>
               <TextInput
+                ref={passwordRef}
                 placeholder="••••••••"
                 secureTextEntry
                 value={password}
@@ -119,8 +134,11 @@ const LoginScreen = ({ navigation }) => {
                   components.input,
                   passFocused && components.inputFocused
                 ]}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin} // 👈 ENTER hace login
               />
 
+              {/* 🔥 BOTÓN */}
               <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                 <TouchableOpacity
                   style={components.buttonPrimary}
@@ -132,6 +150,7 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </Animated.View>
 
+              {/* 🔗 REGISTRO */}
               <TouchableOpacity
                 style={components.buttonSecondary}
                 onPress={() => navigation.navigate('Register')}

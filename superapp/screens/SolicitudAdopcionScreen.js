@@ -5,6 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ScrollView,
+  Image
 } from 'react-native';
 
 import {
@@ -14,11 +16,16 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
+import { useNavigation } from '@react-navigation/native';
 
-import { db } from '../firebaseConfig';
+import { db, auth } from '../firebaseConfig';
 import { styles } from '../styles/SolicitudAdopcionStyles';
 
 const SolicitudAdopcionScreen = () => {
+  const navigation = useNavigation();
+
+  const [paso, setPaso] = useState(1);
+
   const [mascotas, setMascotas] = useState([]);
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState(null);
 
@@ -26,7 +33,6 @@ const SolicitudAdopcionScreen = () => {
   const [telefono, setTelefono] = useState('');
   const [mensaje, setMensaje] = useState('');
 
-  // 🔥 Obtener mascotas
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, 'mascotas'),
@@ -42,7 +48,9 @@ const SolicitudAdopcionScreen = () => {
     return unsubscribe;
   }, []);
 
-  // ✅ Enviar solicitud
+  const siguiente = () => setPaso(paso + 1);
+  const atras = () => setPaso(paso - 1);
+
   const enviarSolicitud = async () => {
     if (!mascotaSeleccionada || !nombre || !telefono || !mensaje) {
       Alert.alert('Error', 'Completa todos los campos');
@@ -58,80 +66,140 @@ const SolicitudAdopcionScreen = () => {
         solicitanteNombre: nombre,
         solicitanteTelefono: telefono,
         solicitanteMensaje: mensaje,
+        userId: auth.currentUser.uid,
+        estado: 'en revisión',
         createdAt: serverTimestamp(),
       });
 
-      Alert.alert('Éxito', 'Solicitud enviada correctamente');
+      Alert.alert('Éxito', 'Solicitud enviada');
 
+      setPaso(1);
       setMascotaSeleccionada(null);
       setNombre('');
       setTelefono('');
       setMensaje('');
     } catch (error) {
-      Alert.alert('Error', 'No se pudo enviar la solicitud');
+      Alert.alert('Error', 'No se pudo enviar');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Solicitud de adopción 🐾</Text>
+    <View style={{ flex: 1, backgroundColor: '#F5F1EA' }}>
+      
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Image
+          source={require('../assets/icono.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.headerTitle}>Solicitud de adopción</Text>
+      </View>
 
-      {/* 🐶 SELECTOR DE MASCOTA */}
-<View style={styles.selector}>
-  <Text style={styles.selectorTitle}>Selecciona una mascota</Text>
-
-  {mascotas.map((mascota) => (
-    <TouchableOpacity
-      key={mascota.id}
-      style={[
-        styles.option,
-        mascotaSeleccionada === mascota.id && styles.optionSelected,
-      ]}
-      onPress={() => setMascotaSeleccionada(mascota.id)}
-    >
-      <Text
-        style={[
-          styles.optionText,
-          mascotaSeleccionada === mascota.id && styles.optionTextSelected,
-        ]}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16 }}
       >
-        {mascota.nombre}
-      </Text>
-    </TouchableOpacity>
-  ))}
-</View>
 
-      {/* 📋 FORMULARIO */}
-      <TextInput
-        placeholder="Tu nombre"
-        style={styles.input}
-        value={nombre}
-        onChangeText={setNombre}
-      />
+        {/* BOTÓN MIS SOLICITUDES */}
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => navigation.navigate('MisSolicitudes')}
+        >
+          <Text style={styles.secondaryButtonText}>
+            Ver mis solicitudes
+          </Text>
+        </TouchableOpacity>
 
-      <TextInput
-        placeholder="Teléfono"
-        style={styles.input}
-        value={telefono}
-        onChangeText={setTelefono}
-        keyboardType="phone-pad"
-      />
+        {/* PASO 1 - SELECCIONAR MASCOTA */}
+        {paso === 1 && (
+          <View>
+            <Text style={styles.selectorTitle}>Elige una mascota</Text>
 
-      <TextInput
-        placeholder="Mensaje"
-        style={[styles.input, styles.textArea]}
-        value={mensaje}
-        onChangeText={setMensaje}
-        multiline
-        numberOfLines={4}
-      />
+            {mascotas.map((mascota) => (
+              <TouchableOpacity
+                key={mascota.id}
+                style={[
+                  styles.option,
+                  mascotaSeleccionada === mascota.id && styles.optionSelected,
+                ]}
+                onPress={() => setMascotaSeleccionada(mascota.id)}
+              >
+                <Text
+                  style={
+                    mascotaSeleccionada === mascota.id
+                      ? styles.optionTextSelected
+                      : styles.optionText
+                  }
+                >
+                  {mascota.nombre}
+                </Text>
+              </TouchableOpacity>
+            ))}
 
+            <TouchableOpacity style={styles.button} onPress={siguiente}>
+              <Text style={styles.buttonText}>Siguiente</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* PASO 2 - DATOS PERSONALES */}
+        {paso === 2 && (
+          <View>
+            <TextInput
+              placeholder="Tu nombre"
+              style={styles.input}
+              value={nombre}
+              onChangeText={setNombre}
+            />
+
+            <TextInput
+              placeholder="Teléfono"
+              style={styles.input}
+              value={telefono}
+              onChangeText={setTelefono}
+              keyboardType="phone-pad"
+            />
+
+            <TouchableOpacity style={styles.button} onPress={siguiente}>
+              <Text style={styles.buttonText}>Siguiente</Text>
+            </TouchableOpacity>
+
+            <Text onPress={atras} style={styles.backText}>
+              ← Atrás
+            </Text>
+          </View>
+        )}
+
+        {/* PASO 3 - MENSAJE */}
+        {paso === 3 && (
+          <View>
+            <TextInput
+              placeholder="Mensaje"
+              style={[styles.input, styles.textArea]}
+              value={mensaje}
+              onChangeText={setMensaje}
+              multiline
+            />
+
+            <TouchableOpacity style={styles.button} onPress={enviarSolicitud}>
+              <Text style={styles.buttonText}>Enviar 🚀</Text>
+            </TouchableOpacity>
+
+            <Text onPress={atras} style={styles.backText}>
+              ← Atrás
+            </Text>
+          </View>
+        )}
+
+      </ScrollView>
       <TouchableOpacity
-        style={styles.button}
-        onPress={enviarSolicitud}
-      >
-        <Text style={styles.buttonText}>Enviar solicitud</Text>
-      </TouchableOpacity>
+  style={styles.secondaryButton}
+  onPress={() => navigation.navigate('Inicio')}
+>
+  <Text style={styles.secondaryButtonText}>
+    Volver al inicio
+  </Text>
+</TouchableOpacity>
     </View>
   );
 };

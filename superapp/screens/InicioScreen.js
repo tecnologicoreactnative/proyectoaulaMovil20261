@@ -6,47 +6,62 @@ import {
   ImageBackground,
   PanResponder,
   TouchableOpacity,
+  Image,
+  Dimensions,
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import { AuthContexto } from '../contextos/AuthContexto';
 import { styles } from '../styles/InicioStyles';
 import { components } from '../styles/components';
+import { colors } from '../styles/colors';
 
+const { height } = Dimensions.get('window');
 const SEGMENTS = 15;
 
 const InicioScreen = () => {
   const { usuario } = useContext(AuthContexto);
   const navigation = useNavigation();
 
-  // Posiciones del dragón
+  // 🐉 Dragón en fila (visible desde inicio)
   const points = useRef(
-    Array.from({ length: SEGMENTS }, () =>
-      new Animated.ValueXY({ x: 120, y: 120 })
+    Array.from({ length: SEGMENTS }, (_, i) =>
+      new Animated.ValueXY({ x: 100 - i * 12, y: 80 })
     )
   ).current;
 
-  // Gestos
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+
       onPanResponderMove: (_, gesture) => {
+        const x = gesture.moveX - 40;
+        const y = gesture.moveY - 180;
+
+        // 🐲 cabeza con animación suave
         Animated.spring(points[0], {
-          toValue: { x: gesture.moveX - 40, y: gesture.moveY - 250 },
+          toValue: { x, y },
           useNativeDriver: false,
+          speed: 20,
+          bounciness: 0,
         }).start();
 
+        // 🐍 cuerpo sigue con efecto “cola”
         for (let i = 1; i < SEGMENTS; i++) {
+          const prevX = points[i - 1].x._value;
+          const prevY = points[i - 1].y._value;
+
           Animated.spring(points[i], {
-            toValue: {
-              x: points[i - 1].x._value,
-              y: points[i - 1].y._value,
-            },
-            speed: 20,
+            toValue: { x: prevX, y: prevY },
             useNativeDriver: false,
+            speed: 20,
+            bounciness: 0,
           }).start();
         }
       },
+
+      onPanResponderTerminationRequest: () => false,
     })
   ).current;
 
@@ -56,64 +71,77 @@ const InicioScreen = () => {
       style={{ flex: 1 }}
     >
       <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-        <View style={components.card}>
+        
+        <View
+          style={[
+            components.card,
+            {
+              minHeight: height * 0.65,
+              justifyContent: 'space-between',
+            },
+          ]}
+        >
           {usuario && (
             <>
-              <Text style={styles.emoji}>🐾</Text>
-              <Text style={styles.welcome}>Bienvenid@</Text>
-              <Text style={styles.title}>{usuario.nombre}</Text>
+              <Image
+                source={require('../assets/huellas.png')}
+                style={{
+                  width: 80,
+                  height: 80,
+                  alignSelf: 'center',
+                  marginBottom: 3,
+                  resizeMode: 'contain',
+                }}
+              />
+
+              <Text style={styles.welcome}>
+                Bienvenid@ {usuario.nombre}
+              </Text>
+
               <Text style={styles.Text}>
                 Gracias por ayudar a cambiar la vida de una mascota.
               </Text>
 
-              {/* ✅ BOTÓN */}
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Mascotas')}
-                style={{
-                  marginTop: 20,
-                  backgroundColor: '#ff7a00',
-                  paddingVertical: 14,
-                  borderRadius: 14,
-                  alignItems: 'center',
-                }}
-              >
-                <Text
+              {/* BOTONES */}
+              <View style={{ marginTop: 10 }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Mascotas')}
                   style={{
-                    color: '#fff',
-                    fontSize: 16,
-                    fontWeight: 'bold',
+                    marginTop: 10,
+                    backgroundColor: colors.primary,
+                    paddingVertical: 14,
+                    borderRadius: 14,
+                    alignItems: 'center',
                   }}
                 >
-                  Ver mascotas en adopción 🐶🐱
-                </Text>
-              </TouchableOpacity>
-<TouchableOpacity
-  onPress={() => navigation.navigate('SolicitudAdopcion')}
-  style={{
-    marginTop: 12,
-    backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  }}
->
-  <Text
-    style={{
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    }}
-  >
-    Enviar solicitud de adopción 📝🐾
-  </Text>
-</TouchableOpacity>
-              {/* 🐉 DRAGÓN */}
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                    Ver mascotas 🐶🐱
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('SolicitudAdopcion')}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: colors.primaryDark,
+                    paddingVertical: 14,
+                    borderRadius: 14,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                    Enviar solicitud 📝🐾
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* 🐉 JUEGO */}
               <View
                 {...panResponder.panHandlers}
                 style={{
-                  marginTop: 24,
-                  height: 240,
-                  backgroundColor: '#111',
+                  marginTop: 20,
+                  height: 180,
+                  backgroundColor: '#222',
                   borderRadius: 16,
                   overflow: 'hidden',
                 }}
@@ -123,10 +151,11 @@ const InicioScreen = () => {
                     key={index}
                     style={{
                       position: 'absolute',
-                      width: index === 0 ? 16 : 10,
-                      height: index === 0 ? 16 : 10,
+                      width: index === 0 ? 18 : 10,
+                      height: index === 0 ? 18 : 10,
                       borderRadius: 50,
-                      backgroundColor: index === 0 ? '#ff7a00' : '#fff',
+                      backgroundColor:
+                        index === 0 ? '#ff3b3b' : '#ffffff',
                       transform: point.getTranslateTransform(),
                     }}
                   />
