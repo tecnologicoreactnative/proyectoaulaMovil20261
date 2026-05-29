@@ -1,15 +1,23 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import NavegacionTabs from './NavegacionTabs';
-import DetailsScreen from '../Screens/DetailsScreen';
+import DetailsScreen from '../screens/DetailsScreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const NavegacionStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true }}>
+    <Stack.Navigator>
       <Stack.Screen name="Tabs" component={NavegacionTabs} options={{ headerShown: false }} />
-      <Stack.Screen name="Detalle" component={DetailsScreen} options={{ title: 'Detalle' }} /> 
+      <Stack.Screen 
+        name="Detalle" 
+        component={DetailsScreen} 
+        options={{ 
+          title: 'Detalle',
+          headerTintColor: '#000000',
+          headerStyle: { backgroundColor: '#ffffff' },
+        }} 
+      />
     </Stack.Navigator>
   );
 };
