@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -22,7 +22,7 @@ import { Modal } from "react-native";
 
 // Styles for new category multi-select UI (dynamic values depend on color map)
 
-export default function BookForm({ onAdd }) {
+export default function BookForm({ onAdd, onSubmit, mode = "add", initialData = null }) {
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -33,6 +33,7 @@ export default function BookForm({ onAdd }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [available, setAvailable] = useState(true);
   const [image, setImage] = useState(null);
+  const [bookId, setBookId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const maxDescriptionLength = 200;
@@ -51,28 +52,51 @@ export default function BookForm({ onAdd }) {
     }
   }
 
+  // Initialize edit mode values when provided
+  useEffect(() => {
+    if (mode === "edit" && initialData) {
+      setTitle(initialData.title || "");
+      setAuthor(initialData.author || "");
+      setDescription(initialData.description || "");
+      const cats = Array.isArray(initialData.categories)
+        ? initialData.categories
+        : initialData.category
+        ? [initialData.category]
+        : [];
+      if (cats.length > 0) {
+        setSelectedCategories(cats);
+        setCategory(cats[0]);
+      }
+      if (initialData.id) setBookId(initialData.id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, initialData]);
+
   async function handleSubmit() {
     if (!title.trim() || !author.trim()) {
       Alert.alert("Faltan campos", "Completa el título y el autor.");
       return;
     }
     if (!image) {
-      Alert.alert("Imagen requerida", "Por favor añade una imagen de portada para el libro.");
-      return;
+      // Allow edit mode to skip image if an existing one is present
+      if (!(mode === "edit" && initialData?.image)) {
+        Alert.alert("Imagen requerida", "Por favor añade una imagen de portada para el libro.");
+        return;
+      }
     }
     setSubmitting(true);
     try {
-      await onAdd(
-        {
-          title,
-          author,
-          description,
-          categories: selectedCategories,
-          category: selectedCategories[0] || "",
-          available,
-        },
-        image ? image.base64 : null,
-      );
+      const payload = {
+        id: bookId,
+        title,
+        author,
+        description,
+        categories: selectedCategories,
+        category: selectedCategories[0] || "",
+        available,
+      };
+      const submitFn = mode === "edit" ? onSubmit : onAdd;
+      await (submitFn ? submitFn(payload, image ? image.base64 : null) : Promise.resolve());
       setTitle("");
       setAuthor("");
       setDescription("");
@@ -80,7 +104,7 @@ export default function BookForm({ onAdd }) {
       setSelectedCategories([]);
       setAvailable(true);
       setImage(null);
-      Alert.alert("Éxito", "Libro agregado correctamente.");
+      Alert.alert("Éxito", mode === "edit" ? "Libro actualizado" : "Libro agregado correctamente.");
     } catch (err) {
       Alert.alert("Error", "No se pudo agregar el libro.");
     } finally {
@@ -106,7 +130,7 @@ export default function BookForm({ onAdd }) {
         <View style={styles.headerIcon}>
           <Ionicons name="book-add" size={24} color={colors.primary} />
         </View>
-        <Text style={styles.headerTitle}>Agregar libro</Text>
+        <Text style={styles.headerTitle}>{mode === 'edit' ? 'Editar libro' : 'Agregar libro'}</Text>
         <Text style={styles.headerSubtitle}>
           Completa los datos del libro para añadirlo a la biblioteca
         </Text>
@@ -176,7 +200,7 @@ export default function BookForm({ onAdd }) {
                       setSelectedCategories((prev) =>
                         prev.includes(cat) ? prev.filter((p) => p !== cat) : [...prev, cat]
                       );
-                    }} style={[styles.modalChip, { backgroundColor: color, opacity: active ? 0.9 : 0.6 }]}>
+                    }} style={[styles.modalChip, { backgroundColor: color, opacity: active ? 1 : 0.45 }]}>
                       <Text style={styles.modalChipText}>{cat}{active ? ' ✔' : ''}</Text>
                     </TouchableOpacity>
                   )
@@ -314,20 +338,20 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary + "15",
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: colors.primary + "14",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
     color: colors.text,
-    marginBottom: 4,
-    letterSpacing: -0.5,
+    marginBottom: 6,
+    letterSpacing: -0.6,
   },
   headerSubtitle: {
     fontSize: 13,
@@ -337,12 +361,14 @@ const styles = StyleSheet.create({
   },
   formCard: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -362,7 +388,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: colors.surfaceAlt,
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 14,
     fontSize: 15,
     color: colors.text,
@@ -383,9 +409,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: colors.surfaceAlt,
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 4,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   toggleInfo: {
     flexDirection: "row",
@@ -413,12 +441,14 @@ const styles = StyleSheet.create({
   },
   imageCard: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     marginBottom: 20,
-    shadowColor: "#000",
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -480,14 +510,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 14,
+    paddingVertical: 18,
+    borderRadius: 16,
     gap: 8,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
   },
   submitButtonDisabled: {
     opacity: 0.6,
@@ -535,13 +565,17 @@ const styles = StyleSheet.create({
     width: '90%',
     height: '70%',
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   modalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 12,
+    color: colors.text,
+    letterSpacing: -0.3,
   },
   modalScroll: {
     paddingVertical: 8,
@@ -565,12 +599,15 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   modalBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     marginLeft: 8,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 10,
   },
   modalBtnText: {
     color: colors.primary,
     fontWeight: '700',
+    fontSize: 14,
   },
 });

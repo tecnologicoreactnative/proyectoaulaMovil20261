@@ -7,7 +7,8 @@ import {
   setDoc,
   serverTimestamp,
   onSnapshot,
-} from "firebase/firestore";
+  deleteDoc,
+  } from "firebase/firestore";
 import uploadToCloudinary from "./useCloudinary";
 import { db } from "../firebase";
 
@@ -119,6 +120,74 @@ export default function useBooks() {
     }
   }
 
+  // Update an existing book by id. If imageBase64 is provided, upload to Cloudinary and update image data as well.
+  async function updateBook(id, data, imageBase64) {
+    if (!id) throw new Error("updateBook: missing id");
+    try {
+      const docRef = doc(db, "books", id);
+      const updatePayload = {
+        title: data.title || "Untitled",
+        author: data.author || "",
+        description: data.description || "",
+        categories: Array.isArray(data.categories)
+          ? data.categories
+          : data.category
+            ? [data.category]
+            : [],
+        category: data.category || "",
+        tags: data.tags || [],
+        available: data.available ?? true,
+        updatedAt: serverTimestamp(),
+      };
+
+      await setDoc(docRef, updatePayload, { merge: true });
+
+      if (imageBase64) {
+        try {
+          const cleaned = imageBase64 ? imageBase64.replaceAll(/\s+/g, "") : "";
+          const cloudName = "ddfhhuztk";
+          const uploadPreset = "biblioteca-tdea";
+          const cloudResp = await uploadToCloudinary(cleaned, {
+            cloudName,
+            uploadPreset,
+          });
+          if (cloudResp?.secure_url) {
+            await setDoc(
+              doc(db, "books", id),
+              {
+                image: cloudResp.secure_url,
+                cloudinaryId: cloudResp.public_id,
+                updatedAt: serverTimestamp(),
+              },
+              { merge: true },
+            );
+          }
+        } catch (e) {
+          console.error("updateBook: image upload failed", e);
+        }
+      }
+
+      await loadBooks();
+      return { id };
+    } catch (err) {
+      console.error("updateBook error", err);
+      throw err;
+    }
+  }
+
+  // Delete a book by id
+  async function deleteBook(id) {
+    if (!id) throw new Error("deleteBook: missing id");
+    try {
+      await deleteDoc(doc(db, "books", id));
+      await loadBooks();
+      return { id };
+    } catch (err) {
+      console.error("deleteBook error", err);
+      throw err;
+    }
+  }
+
   useEffect(() => {
     setLoading(true);
     const q = collection(db, "books");
@@ -163,7 +232,7 @@ export default function useBooks() {
     return () => unsub();
   }, []);
 
-  return { books, loading, refresh: loadBooks, addBook };
+  return { books, loading, refresh: loadBooks, addBook, updateBook, deleteBook };
 }
 
 // Helper: derive categories from a list of books where each book may have an array of categories

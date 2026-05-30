@@ -8,16 +8,12 @@ import {
   runTransaction,
   serverTimestamp,
   onSnapshot,
+  Timestamp,
 } from "firebase/firestore";
+import { STATES } from "../constants/loans";
 import { db } from "../firebase";
 
-export const STATES = {
-  REQUESTED: "solicitado",
-  APPROVED: "aprobado",
-  DELIVERED: "entregado",
-  RETURNED: "devuelto",
-  CANCELLED: "cancelado",
-};
+export { STATES };
 
 export default function useLoans() {
   const [loading, setLoading] = useState(false);
@@ -109,8 +105,41 @@ export default function useLoans() {
         // Update loan status and timestamps
         const updates = { status: newStatus };
         if (newStatus === STATES.APPROVED) updates.approvedAt = serverTimestamp();
-        if (newStatus === STATES.DELIVERED) updates.deliveredAt = serverTimestamp();
-        if (newStatus === STATES.RETURNED) updates.returnedAt = serverTimestamp();
+        if (newStatus === STATES.DELIVERED) {
+          const deliveredAtDate = new Date();
+          updates.deliveredAt = serverTimestamp();
+          updates.maxReturnDate = Timestamp.fromDate(
+            new Date(deliveredAtDate.getTime() + 14 * 24 * 60 * 60 * 1000)
+          );
+        }
+        if (newStatus === STATES.RETURNED) {
+          const returnedAtDate = new Date();
+          updates.returnedAt = serverTimestamp();
+
+          // Check delay penalty
+          const maxReturn = loan.maxReturnDate;
+          if (maxReturn) {
+            const maxReturnDate = maxReturn.toDate ? maxReturn.toDate() : new Date(maxReturn);
+            if (returnedAtDate > maxReturnDate) {
+              const borrowerRef = doc(db, "users", loan.borrowerId);
+              const borrowerSnap = await transaction.get(borrowerRef);
+              if (borrowerSnap.exists()) {
+                const borrowerData = borrowerSnap.data();
+                const currentDelayCount = borrowerData.delayCount || 0;
+                const newDelayCount = currentDelayCount + 1;
+                const userUpdates = {
+                  delayCount: newDelayCount,
+                };
+                if (newDelayCount >= 3) {
+                  userUpdates.penaltyUntil = Timestamp.fromDate(
+                    new Date(returnedAtDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+                  );
+                }
+                transaction.update(borrowerRef, userUpdates);
+              }
+            }
+          }
+        }
 
         transaction.update(loanRef, updates);
       });
@@ -126,6 +155,14 @@ export default function useLoans() {
   const approveLoan = useCallback((loanId) => updateLoanStatus(loanId, STATES.APPROVED), [updateLoanStatus]);
   const markDelivered = useCallback((loanId) => updateLoanStatus(loanId, STATES.DELIVERED), [updateLoanStatus]);
   const markReturned = useCallback((loanId) => updateLoanStatus(loanId, STATES.RETURNED), [updateLoanStatus]);
+
+  const checkUserPenalty = useCallback((user) => {
+    if (!user || !user.penaltyUntil) return false;
+    const penaltyDate = user.penaltyUntil?.toDate
+      ? user.penaltyUntil.toDate()
+      : new Date(user.penaltyUntil);
+    return penaltyDate > new Date();
+  }, []);
 
   // Cancel a loan request (only when REQUESTED or APPROVED)
   const cancelLoan = useCallback(async (loanId) => {
@@ -200,6 +237,7 @@ export default function useLoans() {
             requestedAt: data.requestedAt?.toDate ? data.requestedAt.toDate() : null,
             approvedAt: data.approvedAt?.toDate ? data.approvedAt.toDate() : null,
             deliveredAt: data.deliveredAt?.toDate ? data.deliveredAt.toDate() : null,
+            maxReturnDate: data.maxReturnDate?.toDate ? data.maxReturnDate.toDate() : null,
             returnedAt: data.returnedAt?.toDate ? data.returnedAt.toDate() : null,
             cancelledAt: data.cancelledAt?.toDate ? data.cancelledAt.toDate() : null,
           };
@@ -228,6 +266,7 @@ export default function useLoans() {
     STATES,
     userLoans,
     userLoansLoading,
-    subscribeToUserLoans
+    subscribeToUserLoans,
+    checkUserPenalty,
   };
 }

@@ -88,11 +88,6 @@ export default function HomeContent({ navigation }) {
       <EmptyState
         title="No hay libros"
         description="Agrega tu primer libro para comenzar tu biblioteca digital"
-        action={
-          <Text style={styles.emptySubtitle}>
-            Comienza llenando el formulario arriba
-          </Text>
-        }
       />
     );
   }, [loading]);
@@ -175,7 +170,7 @@ const styles = {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -183,25 +178,27 @@ const styles = {
   heroIcon: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primary + "15",
+    borderRadius: 14,
+    backgroundColor: colors.primary + "12",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 14,
   },
   heroTextContainer: {
     flex: 1,
   },
   heroTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
+    lineHeight: 28,
   },
   heroSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textMuted,
-    marginTop: 2,
+    marginTop: 3,
+    lineHeight: 20,
   },
   emptySubtitle: {
     color: colors.primary,
@@ -214,14 +211,14 @@ const styles = {
     right: 20,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 18,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 6,
   },
 };

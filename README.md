@@ -1,5 +1,5 @@
 # Proyecto: App de Biblioteca (Proyecto de Desarrollo Móvil)
-
+## Link apk: https://expo.dev/accounts/santiagoa18/projects/Leero/builds/1f3e2e12-5323-4caf-9526-45973e44b7dc
 ## Resumen del proyecto
 
 Esta aplicación móvil permite a los usuarios gestionar una biblioteca digital: pueden registrarse, iniciar sesión, agregar libros (incluyendo subir una imagen de portada obligatoria), ver detalles de cada libro, filtrar por categorías, y gestionar préstamos (solicitar, aprobar, entregar, devolver y cancelar).

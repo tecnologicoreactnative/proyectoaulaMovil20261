@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
   },
   drawerContainer: {
     position: "absolute",
@@ -136,9 +136,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderBottomLeftRadius: 24, // Curved bottom 
     borderBottomRightRadius: 24,
-    shadowColor: "#000",
+    shadowColor: colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 8,
   },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   item: {
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.1)",
+    borderBottomColor: colors.border,
   },
   itemText: {
     fontSize: 16,

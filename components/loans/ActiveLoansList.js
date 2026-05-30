@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,33 +12,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import useLoans from "../../hooks/useLoans";
 import useBooks from "../../hooks/useBooks";
+import { LOAN_STATUS_CONFIG, formatDate } from "../../constants/loans";
 import { colors } from "../colors";
-
-// Status config
-const statusConfig = {
-  solicitado: { label: "Solicitado", icon: "time-outline", color: colors.warning, bg: colors.warning + "15" },
-  aprobado: { label: "Aprobado", icon: "checkmark-circle-outline", color: colors.info, bg: colors.info + "15" },
-  entrega: { label: "Entregado", icon: "cube-outline", color: colors.success, bg: colors.success + "15" },
-  cancelado: { label: "Cancelado", icon: "close-circle-outline", color: colors.error, bg: colors.error + "15" },
-};
-
-// Helper to format dates
-const formatDate = (date) => {
-  if (!date) return "—";
-  if (typeof date === "object" && date.toLocaleDateString) {
-    return date.toLocaleDateString("es-CO", {
-      day: "2-digit",
-      month: "short",
-    });
-  }
-  return String(date);
-};
 
 // ActiveLoansList: muestra préstamos activos
 const ActiveLoansList = () => {
   const { user } = useAuth();
   const { userLoans, userLoansLoading, subscribeToUserLoans, markReturned, cancelLoan, loading, STATES } = useLoans();
   const { books } = useBooks();
+  const [imageErrors, setImageErrors] = useState({});
+
+  const handleImageError = (bookId) => {
+    setImageErrors((prev) => ({ ...prev, [bookId]: true }));
+  };
 
   useEffect(() => {
     if (user?.uid) {
@@ -56,12 +42,7 @@ const ActiveLoansList = () => {
   };
 
   const getStatusConfig = (status) => {
-    const statusMap = {
-      [STATES.REQUESTED]: "solicitado",
-      [STATES.APPROVED]: "aprobado",
-      [STATES.DELIVERED]: "entrega",
-    };
-    return statusConfig[statusMap[status]] || { label: status, icon: "help-outline", color: colors.textMuted, bg: colors.surfaceAlt };
+    return LOAN_STATUS_CONFIG[status] || { label: status, icon: "help-outline", color: colors.textMuted, bg: colors.surfaceAlt };
   };
 
   const handleReturn = (loanId, bookTitle) => {
@@ -116,8 +97,13 @@ const ActiveLoansList = () => {
       <View key={item.id} style={styles.card}>
         {/* Book Cover */}
         <View style={styles.coverContainer}>
-          {book?.image ? (
-            <Image source={{ uri: book.image }} style={styles.coverImage} />
+          {book?.image && !imageErrors[book.id] ? (
+            <Image
+              source={{ uri: book.image }}
+              style={styles.coverImage}
+              resizeMode="cover"
+              onError={() => handleImageError(book.id)}
+            />
           ) : (
             <View style={styles.coverPlaceholder}>
               <Ionicons name="book-outline" size={20} color={colors.textMuted} />
@@ -259,6 +245,7 @@ const styles = StyleSheet.create({
   coverContainer: {
     width: 50,
     height: 70,
+    overflow: "hidden",
   },
   coverImage: {
     width: "100%",

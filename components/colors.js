@@ -1,17 +1,13 @@
 export const colors = {
-  // Primary palette (Indigo)
-  primary: "#4F46E5",
-  primaryDark: "#4338CA",
-  primaryLight: "#818CF8",
+  // Primary palette (Emerald)
+  primary: "#059669",
+  primaryDark: "#047857",
+  primaryLight: "#10B981",
 
-  // Accent palette
-  accent: "#EC4899",
-  accentLight: "#F9A8D4",
-
-  // Text hierarchy
-  text: "#111827",
-  textLight: "#4B5563",
-  textMuted: "#9CA3AF",
+  // Text hierarchy (Zinc)
+  text: "#18181B",
+  textLight: "#52525B",
+  textMuted: "#A1A1AA",
 
   // Semantic colors
   success: "#10B981",
@@ -20,15 +16,15 @@ export const colors = {
   info: "#3B82F6",
 
   // Background levels
-  background: "#F9FAFB",
+  background: "#FBFBFD",
   surface: "#FFFFFF",
-  surfaceAlt: "#F3F4F6",
+  surfaceAlt: "#F4F4F5",
 
   // Card shadow color
-  cardShadow: "rgba(0, 0, 0, 0.08)",
+  cardShadow: "rgba(0, 0, 0, 0.06)",
 
   // Border
-  border: "#E5E7EB",
+  border: "#E4E4E7",
 };
 
 export default colors;

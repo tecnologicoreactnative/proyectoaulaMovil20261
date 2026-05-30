@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import NetInfo from "@react-native-community/netinfo";
@@ -67,7 +68,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }) {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.logoContainer}>
-            <Ionicons name="library" size={60} color={colors.primary} />
+            <Image source={require("../../assets/logo.png")} style={{ width: 120, height: 120 }} />
           </View>
           <Text style={styles.appTitle}>Biblioteca TDEA</Text>
           <Text style={styles.appSubtitle}>Tu biblioteca digital personal</Text>
@@ -168,37 +169,41 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 32,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.primary + "15",
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primary + "12",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "800",
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
+    lineHeight: 36,
   },
   appSubtitle: {
     fontSize: 15,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: 6,
+    lineHeight: 22,
   },
   formSection: {
     backgroundColor: colors.surface,
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowColor: colors.cardShadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   formTitle: {
     fontSize: 22,
@@ -206,15 +211,17 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: "center",
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   formSubtitle: {
     fontSize: 14,
     color: colors.textMuted,
     textAlign: "center",
     marginBottom: 24,
+    lineHeight: 20,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   inputLabel: {
     flexDirection: "row",
@@ -226,20 +233,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: colors.textLight,
+    letterSpacing: -0.2,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surfaceAlt,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
   },
   input: {
     flex: 1,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
     color: colors.text,
+    lineHeight: 22,
   },
   eyeButton: {
     padding: 14,
@@ -255,16 +265,18 @@ const styles = StyleSheet.create({
     gap: 8,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   loginButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   loginButtonText: {
     color: colors.surface,
     fontSize: 16,
     fontWeight: "700",
+    letterSpacing: -0.2,
   },
   registerSection: {
     flexDirection: "row",

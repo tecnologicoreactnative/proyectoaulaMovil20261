@@ -10,36 +10,72 @@
 
 ## Project Structure (Non-obvious)
 - `components/`: Reusable UI components (buttons, cards, etc.)
+- `components/admin/`: Componentes específicos de admin
 - `hooks/`: Custom logic (useAuth, useBooks, useCloudinary, useLoans)
+- `hooks/useAdminBooks.js`: Hook de admin para libros (CRUD + validaciones)
 - `contexts/`: React context providers (AuthContext)
-- `navigation/`: Screen routing (DrawerNavigator)
 - `screens/`: Main app screens (Home, Login, Register, AddBook, Details)
+- `screens/Admin/`: Pantallas de administración
+- `stacks/`: Navigation stacks (index.js)
 - `assets/`: Static images, icons (access with `require('../assets/name.png')`)
 
+## Clean Architecture Pattern (OBLIGATORIO)
+
+### 3 Capas:
+1. **Hooks** (`hooks/`)
+   - Llamadas a Firebase/API
+   - Validaciones de negocio
+   - Feedback al usuario (Alert)
+   - Estado y lógica de datos
+
+2. **Componentes** (`components/`)
+   - Lógica de renderizado UI
+   - Estados visuales (loading, empty)
+   - Interacciones de UI sin lógica de negocio
+   - Reutilizables en toda la app
+
+3. **Screens** (`screens/`)
+   - Solo composición de componentes y hooks
+   - NO contienen lógica de negocio
+   - Manejan navegación y parámetros de ruta
+
+### Ejemplo de flujo correcto:
+```
+Screen → Hook (lógica) → Componente (render)
+```
+
+### ERRORES COMUNES A EVITAR:
+- ❌ Screen con llamada directa a Firebase
+- ❌ Componente con validaciones de negocio
+- ❌ Hook con lógica de renderizado
+
 ## Important Conventions
-- **Imports**: 1) React, 2) External deps, 3) Internal files
+- **Imports orden**: 1) React, 2) External deps, 3) Internal files
 - **Naming**: 
-  - Components: PascalCase (HomeScreen)
-  - Hooks: camelCase with `use` prefix (useAuth)
+  - Componentes: PascalCase (HomeScreen, BookListItem)
+  - Hooks: camelCase con prefijo `use` (useAuth, useAdminBooks)
   - Variables: camelCase (handleSubmit)
-  - Constants: UPPER_SNAKE_CASE (API_URL) or camelCase
-- **Colors**: Defined in `components/colors.js` - use semantic names
-- **Images**: Static in `assets/` accessed via `require()`
+  - Constantes: UPPER_SNAKE_CASE (API_URL) o camelCase
+- **Colors**: Usar `colors` de `components/colors.js` - nombres semánticos
+- **Iconos**: Ionicons de expo (@expo/vector-icons)
+- **Imágenes**: Static en `assets/` o URL remota (Cloudinary)
 - **State**: 
   - Local: useState
-  - Shared: Context API (AuthContext)
-  - Avoid derived state in state - compute in render
-- **Firebase**: Already configured in `firebase.js` - exports auth, db, storage
+  - Compartido: Context API (AuthContext)
+  - Evitar estado derivado - calcular en render
+- **Firebase**: Ya configurado en `firebase.js` - exporta auth, db, storage
 
 ## Gotchas
-- Firebase credentials hardcoded in `firebase.js` - should use env vars in prod
-- Image uploads use Cloudinary via `useCloudinary.js` hook
-- No linting/testing configured yet (recommended: ESLint, Prettier, Jest)
-- AsyncStorage used for persistence (`@react-native-async-storage/async-storage`)
-- Navigation protected via DrawerNavigator - unauthenticated users redirected to Login
+- Credenciales Firebase hardcodeadas en `firebase.js` - usar env vars en prod
+- Subida de imágenes via Cloudinary usando `useCloudinary.js`
+- No linting/testing configurado (recomendado: ESLint, Prettier, Jest)
+- AsyncStorage usado para persistencia (`@react-native-async-storage/async-storage`)
+- Navegación protegida - usuarios no autenticados redirigidos a Login
+- **Menú**: MenuModal.js (no DrawerNavigator) - contiene opciones de admin condicionadas por `user?.role === "admin"`
 
 ## Development Notes
-- Prefer functional components with hooks
-- Extract complex logic to custom hooks in `hooks/`
-- Avoid console.log in committed code - use console.warn/error only for dev debugging
-- Follow existing file patterns - don't invent new structures
+- Preferir componentes funcionales con hooks
+- Extraer lógica compleja a custom hooks en `hooks/`
+- Avoid console.log en código comprometido - usar console.warn/error solo para debugging
+- Follow existing file patterns - no inventar nuevas estructuras
+- **Siempre** seguir el patrón de arquitectura limpia de 3 capas

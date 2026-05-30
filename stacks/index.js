@@ -41,7 +41,18 @@ export function MainStackNavigator() {
         name="MisPrestamos"
         component={require("../screens/MisPrestamos").default}
       />
-      {/* Pantallas adicionales se agregarán aquí */}
+      <MainStack.Screen
+        name="AdminBooks"
+        component={require("../screens/Admin/AdminBooksScreen").default}
+      />
+      <MainStack.Screen
+        name="BookEdit"
+        component={require("../screens/Admin/BookEditScreen").default}
+      />
+      <MainStack.Screen
+        name="AdminLoans"
+        component={require("../screens/Admin/AdminLoansScreen").default}
+      />
     </MainStack.Navigator>
   );
 }

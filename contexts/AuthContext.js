@@ -1,9 +1,10 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useCallback } from "react";
 import { use } from "react";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { Alert } from "react-native";
 import { auth, db } from "../firebase";
+import useNotifications from "../hooks/useNotifications";
 
 const AuthContext = createContext({
   user: null,
@@ -14,6 +15,8 @@ const AuthContext = createContext({
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { registerForPushNotifications, unregisterPushNotifications } =
+    useNotifications();
 
   useEffect(() => {
     let unsubscribeUser = null;
@@ -42,6 +45,12 @@ export function AuthProvider({ children }) {
             role: profileData.role || "user",
           });
           setLoading(false);
+
+          // Registrar push token después de que el perfil se haya inicializado
+          // Usar un pequeño delay para permitir que Firestore termine de escribir el perfil
+          setTimeout(() => {
+            registerForPushNotifications(u.uid);
+          }, 2000);
         },
         (err) => {
           console.error("AuthContext: profile fetch error", err);
@@ -55,6 +64,11 @@ export function AuthProvider({ children }) {
             role: "user",
           });
           setLoading(false);
+
+          // Aun sin perfil, intentar registrar token
+          setTimeout(() => {
+            registerForPushNotifications(u.uid);
+          }, 2000);
         }
       );
     });
@@ -63,15 +77,22 @@ export function AuthProvider({ children }) {
       if (unsubscribeAuth) unsubscribeAuth();
       if (unsubscribeProfile) unsubscribeProfile();
     };
-  }, []);
+  }, [registerForPushNotifications]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
+      const currentUid = user?.uid;
+
+      // Limpiar token de notificaciones antes de cerrar sesión
+      if (currentUid) {
+        await unregisterPushNotifications(currentUid);
+      }
+
       await firebaseSignOut(auth);
     } catch (e) {
       Alert.alert("Error", e.message);
     }
-  };
+  }, [user, unregisterPushNotifications]);
 
   return (
     <AuthContext.Provider value={{ user, loading, signOut }}>

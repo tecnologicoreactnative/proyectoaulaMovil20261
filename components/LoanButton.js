@@ -14,7 +14,7 @@ const STATES = {
 };
 
 export default function LoanButton({ book }) {
-  const { requestLoan, cancelLoan, loading, userLoans, subscribeToUserLoans } = useLoans();
+  const { requestLoan, cancelLoan, loading, userLoans, subscribeToUserLoans, checkUserPenalty } = useLoans();
   const { user } = useAuth() || {};
   const [busy, setBusy] = useState(false);
   const [activeLoan, setActiveLoan] = useState(null);
@@ -49,6 +49,19 @@ export default function LoanButton({ book }) {
     }
     if (!book || !book.id) {
       Alert.alert("Error", "Libro inválido");
+      return;
+    }
+
+    // Check penalty before requesting
+    if (checkUserPenalty(user)) {
+      const penaltyDate = user.penaltyUntil?.toDate
+        ? user.penaltyUntil.toDate()
+        : new Date(user.penaltyUntil);
+      const daysLeft = Math.ceil((penaltyDate - new Date()) / (1000 * 60 * 60 * 24));
+      Alert.alert(
+        "Penalización activa",
+        `No podés solicitar préstamos por ${daysLeft} día${daysLeft !== 1 ? "s" : ""}.`
+      );
       return;
     }
 

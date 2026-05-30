@@ -80,19 +80,19 @@ export default function BookDetails({ book }) {
         {/* Gradient Overlay */}
         <View style={styles.imageOverlay} />
         
-        {/* Loan Status Badge */}
+        {/* Loan Status Badge - Solo Disponible/No disponible */}
         <View style={[
           styles.availabilityBadge,
-          activeLoan ? getStatusBadgeColor(activeLoan.status) : (book.available ? colors.success : colors.error)
+          book.available ? styles.badgeAvailable : styles.badgeUnavailable,
         ]}>
           <View style={styles.badgeContent}>
-            <Ionicons 
-              name={activeLoan ? getStatusIcon(activeLoan.status) : (book.available ? "checkmark-circle" : "close-circle")} 
-              size={16} 
-              color={colors.surface} 
+            <Ionicons
+              name={book.available ? "checkmark-circle" : "close-circle"}
+              size={18}
+              color={colors.surface}
             />
-            <Text style={styles.availabilityText}>
-              {activeLoan ? getStatusText(activeLoan.status) : (book.available ? "Disponible" : "No disponible")}
+            <Text style={[styles.availabilityText, { color: colors.surface }]}>
+              {book.available ? "Disponible" : "No disponible"}
             </Text>
           </View>
         </View>
@@ -160,25 +160,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyIconContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     backgroundColor: colors.surfaceAlt,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "800",
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 10,
+    letterSpacing: -0.3,
   },
   emptyDescription: {
     fontSize: 14,
     color: colors.textMuted,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   imageSection: {
     position: "relative",
@@ -186,11 +189,11 @@ const styles = StyleSheet.create({
   },
   coverImage: {
     width: "100%",
-    height: 320,
+    height: 340,
   },
   imagePlaceholder: {
     width: "100%",
-    height: 280,
+    height: 300,
     backgroundColor: colors.surfaceAlt,
     justifyContent: "center",
     alignItems: "center",
@@ -200,19 +203,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
+    height: 100,
     backgroundColor: "transparent",
   },
   availabilityBadge: {
     position: "absolute",
-    bottom: 16,
-    right: 16,
-    borderRadius: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    bottom: 20,
+    right: 20,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    shadowColor: "rgba(0,0,0,0.12)",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 6,
   },
   badgeContent: {
     flexDirection: "row",
@@ -222,107 +226,131 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   availabilityText: {
-    color: colors.surface,
     fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.3,
+    fontWeight: "800",
+    letterSpacing: 0.4,
   },
   infoCard: {
     backgroundColor: colors.surface,
     margin: 16,
-    marginTop: -24,
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    marginTop: -28,
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.cardShadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 6,
   },
   bookTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
     color: colors.text,
-    marginBottom: 20,
-    letterSpacing: -0.5,
-    lineHeight: 28,
+    marginBottom: 24,
+    letterSpacing: -0.6,
+    lineHeight: 30,
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: colors.primary + "12",
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: colors.primary + "14",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 14,
   },
   infoLabel: {
     fontSize: 13,
     color: colors.textMuted,
-    width: 70,
+    width: 72,
+    fontWeight: "500",
   },
   infoValue: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: colors.text,
   },
   categoryBadge: {
     backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textLight,
     fontWeight: "600",
   },
   divider: {
     height: 1,
     backgroundColor: colors.border,
-    marginVertical: 16,
+    marginVertical: 20,
   },
   descriptionSection: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: 14,
+    gap: 10,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "700",
     color: colors.text,
+    letterSpacing: -0.2,
   },
   descriptionText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textLight,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 24,
+  },
+  badgeAvailable: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  badgeUnavailable: {
+    backgroundColor: colors.error,
+    borderColor: colors.error,
   },
 });
 
-// Helper functions for loan status display
-const getStatusBadgeColor = (status) => {
+// Helper functions for loan status display using Emerald/Zinc palette
+const getStatusBadgeStyle = (status) => {
+  // Neutral/queued requests use zinc-like neutral badge
   switch (status) {
-    case STATES.REQUESTED: return colors.warning;
-    case STATES.APPROVED: return colors.primary;
-    case STATES.DELIVERED: return colors.success;
-    case STATES.RETURNED: return colors.textMuted;
-    case STATES.CANCELLED: return colors.error;
-    default: return colors.success;
+    case STATES.REQUESTED:
+    case STATES.APPROVED:
+      return { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
+    case STATES.DELIVERED:
+      // Delivered uses Emerald emphasis
+      return { backgroundColor: colors.primaryLight, borderColor: colors.primary, iconColor: colors.primary };
+    case STATES.RETURNED:
+    case STATES.CANCELLED:
+    default:
+      // Returned or Cancelled and any default use a neutral zinc-like badge
+      return { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
   }
 };
+
+const getAvailabilityBadgeStyle = (available) =>
+  available
+    ? { backgroundColor: colors.surfaceAlt, borderColor: colors.primary, iconColor: colors.primary }
+    : { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
 
 const getStatusIcon = (status) => {
   switch (status) {

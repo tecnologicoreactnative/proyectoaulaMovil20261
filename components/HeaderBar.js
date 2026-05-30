@@ -29,12 +29,12 @@ export default function HeaderBar({ title, showBackButton = true }) {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingTop: insets.top + 8,
-    paddingBottom: 8,
-    minHeight: 56 + insets.top,
+    paddingTop: insets.top + 10,
+    paddingBottom: 10,
+    minHeight: 60 + insets.top,
   };
 
   return (
@@ -70,20 +70,23 @@ const styles = StyleSheet.create({
   },
   backText: {
     color: colors.primary,
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: -0.2,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 19,
+    fontWeight: "800",
     color: colors.text,
     position: "absolute",
     left: 0,
     right: 0,
     textAlign: "center",
+    letterSpacing: -0.4,
   },
   menuButton: {
     padding: 8,
+    borderRadius: 10,
   },
   menuIcon: {
     fontSize: 24,

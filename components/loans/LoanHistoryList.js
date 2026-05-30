@@ -1,25 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import useLoans from "../../hooks/useLoans";
 import useBooks from "../../hooks/useBooks";
+import { formatDate } from "../../constants/loans";
 import { colors } from "../colors";
-
-// Helper to format dates
-const formatDate = (date) => {
-  if (!date) return "—";
-  if (typeof date === "object" && date.toLocaleDateString) {
-    return date.toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
-  }
-  return String(date);
-};
 
 // LoanHistoryList: muestra historial de préstamos devueltos
 const LoanHistoryList = () => {
   const { user } = useAuth();
   const { userLoans, userLoansLoading, subscribeToUserLoans, STATES } = useLoans();
   const { books } = useBooks();
+  const [imageErrors, setImageErrors] = useState({});
+
+  const handleImageError = (bookId) => {
+    setImageErrors((prev) => ({ ...prev, [bookId]: true }));
+  };
 
   useEffect(() => {
     if (user?.uid) {
@@ -39,8 +36,13 @@ const LoanHistoryList = () => {
       <View key={item.id} style={styles.card}>
         {/* Book Cover */}
         <View style={styles.coverContainer}>
-          {book?.image ? (
-            <Image source={{ uri: book.image }} style={styles.coverImage} />
+          {book?.image && !imageErrors[book.id] ? (
+            <Image
+              source={{ uri: book.image }}
+              style={styles.coverImage}
+              resizeMode="cover"
+              onError={() => handleImageError(book.id)}
+            />
           ) : (
             <View style={styles.coverPlaceholder}>
               <Ionicons name="book-outline" size={20} color={colors.textMuted} />
@@ -156,6 +158,7 @@ const styles = StyleSheet.create({
   coverContainer: {
     width: 50,
     height: 70,
+    overflow: "hidden",
   },
   coverImage: {
     width: "100%",
