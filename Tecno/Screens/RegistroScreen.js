@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import styles from './styles/RegistroStyles';
 
 const RegistroScreen = ({ navigation }) => {
@@ -9,14 +10,13 @@ const RegistroScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSignUp = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log('Usuario registrado:', userCredential.user);
-      })
-      .catch((error) => {
-        setError(error.message);
-      });
+  const handleSignUp = async () => {
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'usuarios', user.uid), { rol: 'usuario', email: user.email });
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   return (

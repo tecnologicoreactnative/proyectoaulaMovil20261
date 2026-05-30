@@ -72,18 +72,20 @@ const DetailsScreen = ({ route }) => {
   if (cargando) return <ActivityIndicator size="large" color="#4A90E2" style={styles.centrado} />;
   if (!evento) return <Text style={styles.centrado}>Evento no encontrado.</Text>;
 
-  const formatearFecha = (fechaFirebase) => {
-    if (fechaFirebase && fechaFirebase.seconds) {
-      return new Date(fechaFirebase.seconds * 1000).toLocaleDateString();
-    }
-    return 'Fecha no disponible';
-  };
+  const formatearFecha = (fecha) => {
+  if (!fecha) return 'Fecha no disponible';
+  if (typeof fecha === 'string') return fecha; // ya es string como "11/04/2026"
+  if (fecha.seconds) {
+    return new Date(fecha.seconds * 1000).toLocaleDateString('es-CO');
+  }
+  return 'Fecha no disponible';
+}; 
 
   return (
     <View style={styles.fondo}>
       <View style={styles.tarjetaBlanca}>
         <Text style={styles.titulo}>{evento.titulo || 'Sin título'}</Text>
-        <Text style={styles.organizador}>Organiza: {evento.organizador || 'Universidad'}</Text>
+        <Text style={styles.organizador}>Organiza: {evento.organizador || 'Universidad'}</Text> 
 
         <View style={styles.separador} />
 

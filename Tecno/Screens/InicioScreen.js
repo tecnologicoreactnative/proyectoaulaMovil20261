@@ -38,11 +38,21 @@ const InicioScreen = ({ navigation }) => {
   );
 
   useEffect(() => {
-  const resultado = eventos.filter(evento =>
-    evento.titulo?.toLowerCase().includes(busqueda.toLowerCase())
-  );
-  setEventosFiltrados(resultado);
-}, [busqueda, eventos]); 
+    const texto = busqueda.toLowerCase();
+    const resultado = eventos.filter(evento => {
+      const coincideNombre = evento.titulo?.toLowerCase().includes(texto);
+
+      let coincideFecha = false;
+      if (evento.fecha && evento.fecha.seconds) {
+        const fechaFormateada = new Date(evento.fecha.seconds * 1000)
+          .toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        coincideFecha = fechaFormateada.includes(texto);
+      }
+
+      return coincideNombre || coincideFecha;
+    });
+    setEventosFiltrados(resultado);
+  }, [busqueda, eventos]);
 
   return (
     <View style={styles.container}>
@@ -55,7 +65,7 @@ const InicioScreen = ({ navigation }) => {
 
       <TextInput
         style={styles.input}
-        placeholder="🔍 Buscar por nombre..."
+        placeholder="🔍 Buscar" 
         value={busqueda}
         onChangeText={setBusqueda}
         placeholderTextColor="#888"
@@ -76,7 +86,8 @@ const InicioScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('Detalle', { eventoId: item.id })}
             >
               <Text style={styles.tituloEvento}>{item.titulo}</Text>
-              <Text style={styles.infoEvento}>📅 {item.Hora}</Text>
+              <Text style={styles.infoEvento}>📅 {item.fecha || 'Fecha no disponible'}</Text>
+              <Text style={styles.infoEvento}>🕐 {item.Hora || 'Hora no disponible'}</Text> 
               <Text style={styles.infoEvento}>📍 {item.lugar}</Text>
               <Text style={styles.infoEvento}>
                 {item.cuposDisponibles > 0 ? `✅ ${item.cuposDisponibles} cupos` : '🔴 Sin cupos'}

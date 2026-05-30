@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "tecno",
-    "slug": "tecno",
+    "name": "AtteVents",
+    "slug": "attevents",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,13 +17,19 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+        "foregroundImage": "./assets/icon.png",
+        "backgroundImage": "./assets/icon.png",
+        "monochromeImage": "./assets/icon.png" 
+      },
+      "package": "com.muqqet.attevents"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png" 
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0409f28f-e7fa-4f48-8bf4-b0d1fff75954"
+      }
     }
   }
 }
