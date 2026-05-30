@@ -1,33 +1,33 @@
 {
   "expo": {
-    "name": "superapp",
+    "name": "AdoptaLove",
     "slug": "superapp",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "icon": "./assets/icono.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/icono.png",
       "resizeMode": "contain",
       "backgroundColor": "#EDE8DC"
     },
-
     "ios": {
       "supportsTablet": true
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icono.png",
         "backgroundColor": "#EDE8DC"
-      }
+      },
+      "package": "com.luci24.superapp"
     },
-
     "web": {
       "favicon": "./assets/icono.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "96915ae0-c118-4222-a530-d945bd16bece"
+      }
     }
   }
 }

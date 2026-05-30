@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   Alert, KeyboardAvoidingView, ScrollView,
-  Animated, ImageBackground, Image
+  Animated, ImageBackground, Image, Platform
 } from 'react-native';
 
 import { AuthContexto } from '../contextos/AuthContexto';
@@ -69,7 +69,7 @@ const LoginScreen = ({ navigation }) => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-
+//¿qué datos exactamente le estás pasando a iniciarSesion?
         iniciarSesion({
           nombre: user.displayName || 'Usuario',
         });
@@ -82,8 +82,21 @@ const LoginScreen = ({ navigation }) => {
       source={require('../assets/fondo.png')}
       style={{ flex: 1 }}
     >
-      <KeyboardAvoidingView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 100}
+      >
+        <ScrollView
+          contentContainerStyle={[styles.scroll, {
+            flexGrow: 1,
+            justifyContent: 'flex-start',
+            paddingTop: 40,
+            paddingBottom: 40,
+          }]}
+          keyboardShouldPersistTaps="handled"
+          style={{ flex: 1 }}
+        >
 
           {/* 🔥 HEADER */}
           <View style={styles.header}>

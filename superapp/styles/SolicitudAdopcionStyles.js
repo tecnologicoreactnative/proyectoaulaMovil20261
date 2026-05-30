@@ -2,142 +2,309 @@ import { StyleSheet } from 'react-native';
 import { colors } from '../styles/colors';
 
 export const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 16,
-    paddingTop: 10,
   },
 
-  // 🔝 HEADER MÁS PRO
+  // HEADER
   header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: colors.primaryDark,
-  paddingVertical: 14,
-  paddingHorizontal: 18,
-},
+    backgroundColor: colors.primaryDark,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 48,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
 
-logo: {
-  width: 60,
-  height: 60,
-  resizeMode: 'contain',
-},
+  backBtn: {
+    width: 36,
+    height: 36,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
 
-headerTitle: {
-  fontSize: 20,
-  fontWeight: 'bold',
-  color: colors.white,
-  marginLeft: 12, // 👈 separa del logo
-  flex: 1, // 👈 ocupa espacio y centra mejor visualmente
-},
+  backArrow: {
+    fontSize: 26,
+    color: colors.primaryLight,
+    fontWeight: '300',
+    lineHeight: 28,
+  },
 
-  // 📌 TITULO INTERNO
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 18,
-    textAlign: 'center',
+  logo: {
+    width: 70,
+    height: 70,
+    resizeMode: 'contain',
+    marginRight: 10,
+  },
+
+  headerTitleWrap: {
+    flex: 1,
+  },
+
+  headerTitle: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    lineHeight: 24,
+  },
+
+  headerSubtitle: {
+    color: colors.primaryLight,
+    fontSize: 10,
+    fontWeight: '400',
+    letterSpacing: 2,
+    opacity: 0.8,
+  },
+
+  // STEPS BAR
+  stepsBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 10,
+    gap: 6,
+    backgroundColor: colors.primaryDark,
+  },
+
+  stepDot: {
+    flex: 1,
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: 'rgba(232,201,160,0.3)',
+  },
+
+  stepDotActive: {
+    backgroundColor: colors.primaryLight,
+    flex: 2,
+  },
+
+  // SCROLL
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+
+  // VER MIS SOLICITUDES
+  myRequestsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  myRequestsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  myRequestsIcon: {
+    width: 32,
+    height: 32,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  myRequestsLabel: {
+    fontSize: 14,
+    fontWeight: '500',
     color: colors.text,
   },
 
-  // 🧊 INPUTS
+  myRequestsArrow: {
+    fontSize: 20,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+
+  // STEP TITLES
+  stepLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: colors.textLight,
+    marginBottom: 4,
+  },
+
+  stepTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: colors.text,
+    lineHeight: 32,
+    marginBottom: 20,
+  },
+
+  // PET CARDS
+  petList: {
+    gap: 10,
+    marginBottom: 24,
+  },
+
+  petCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 14,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+
+  petCardSelected: {
+    borderColor: colors.primary,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+
+  // Solo cuadro de color, sin emoji
+ petAvatar: {
+  width: 52,
+  height: 52,
+  borderRadius: 16,
+  overflow: 'hidden', // ← agrega esta línea
+},
+
+  petInfo: {
+    flex: 1,
+  },
+
+  petName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+
+  petBreed: {
+    fontSize: 12,
+    color: colors.textLight,
+    fontWeight: '400',
+  },
+
+  petCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  petCheckSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+
+  petCheckMark: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+
+  // INPUTS
+  inputGroup: {
+    marginBottom: 14,
+  },
+
+  inputLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    color: colors.textLight,
+    marginBottom: 8,
+  },
+
   input: {
+    width: '100%',
+    padding: 14,
     backgroundColor: colors.inputBg,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 12,
-    fontSize: 14,
+    borderRadius: 14,
+    fontSize: 15,
     color: colors.text,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
 
   textArea: {
-    height: 110,
-    textAlignVertical: 'top',
+    height: 120,
+    paddingTop: 14,
   },
 
-  // 🎯 BOTÓN PRINCIPAL
-  button: {
-    backgroundColor: colors.primary,
+  // BOTÓN PRINCIPAL
+  primaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
     paddingVertical: 16,
-    borderRadius: 20,
-    alignItems: 'center',
-    marginTop: 12,
-
-    shadowColor: colors.glow,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 7,
-  },
-
-  buttonText: {
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
-
-  // 🔥 BOTÓN SECUNDARIO
-  secondaryButton: {
-    backgroundColor: colors.primaryLight,
-    padding: 13,
-    borderRadius: 16,
-    marginBottom: 18,
-    alignItems: 'center',
-
-    borderWidth: 1,
-    borderColor: colors.primary,
-
-    shadowColor: colors.glow,
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-
-  secondaryButtonText: {
-    color: colors.text,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-
-  // 🐶 SELECTOR
-  selectorTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 10,
-    color: colors.text,
-  },
-
-  option: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    marginBottom: 8,
-    backgroundColor: colors.inputBg,
-  },
-
-  optionSelected: {
+    paddingHorizontal: 20,
     backgroundColor: colors.primary,
+    borderRadius: 18,
+    marginBottom: 16,
+    shadowColor: colors.glow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
 
-  optionText: {
-    color: colors.textLight,
-    fontSize: 14,
-  },
-
-  optionTextSelected: {
+  primaryBtnText: {
     color: colors.white,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 
-  // 🔙 ATRÁS
-  backText: {
-    textAlign: 'center',
-    marginTop: 12,
-    color: colors.primaryDark,
-    fontWeight: 'bold',
+  primaryBtnArrow: {
+    color: colors.primaryLight,
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+
+  // ATRÁS
+  backLinkWrap: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+
+  backLink: {
     fontSize: 14,
+    fontWeight: '500',
+    color: colors.primaryDark,
   },
 });

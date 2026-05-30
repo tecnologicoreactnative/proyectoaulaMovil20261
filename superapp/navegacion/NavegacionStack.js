@@ -9,6 +9,8 @@ import DetailsScreen from '../screens/DetailsScreen';
 import { AuthContexto } from '../contextos/AuthContexto';
 import SolicitudAdopcionScreen from '../screens/SolicitudAdopcionScreen';
 import MisSolicitudesScreen from '../screens/MisSolicitudesScreen';
+import FundacionesScreen from '../screens/FundacionesScreen';
+import HistorialAdopcionesScreen from '../screens/HistorialAdopcionesScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,16 +26,17 @@ const NavegacionStack = () => {
         headerTitleAlign: 'left',
         headerStyle: {
           backgroundColor: '#7A5C3A',
-          elevation: 0,       // Android
-          shadowOpacity: 0,   // iOS
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        headerTintColor: '#ff7a00',
+        headerTintColor: '#ffffff00',
       }}
     >
       <Stack.Screen
         name="Inicio"
         component={InicioScreen}
         options={{
+          headerLeft: () => null, // ← elimina la flecha
           headerTitle: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image
@@ -45,21 +48,13 @@ const NavegacionStack = () => {
                   marginRight: 8,
                 }}
               />
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#fff',
-                }}
-              >
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>
                 Inicio
               </Text>
             </View>
           ),
-
-
           headerRight: () =>
-            usuario ? ( 
+            usuario ? (
               <TouchableOpacity
                 onPress={cerrarSesion}
                 style={{
@@ -70,15 +65,9 @@ const NavegacionStack = () => {
                   backgroundColor: '#E8C9A0',
                   justifyContent: 'center',
                   alignItems: 'center',
-
-
                 }}
               >
-                <Ionicons
-                  name="log-out-outline" 
-                  size={22}
-                  color="#fff"
-                />
+                <Ionicons name="log-out-outline" size={22} color="#fff" />
               </TouchableOpacity>
             ) : null,
         }}
@@ -87,28 +76,38 @@ const NavegacionStack = () => {
       <Stack.Screen
         name="Detalle"
         component={DetailsScreen}
-        options={{
-          title: 'Detalle',
-        }}
+        options={{ title: 'Detalle' }}
       />
 
-      
-<Stack.Screen
-  name="MisSolicitudes"
-  component={MisSolicitudesScreen}
-   options={{ headerShown: false }}
-/>
       <Stack.Screen
-  name="Mascotas"
-  component={MascotasScreen}
-  options={{ headerShown: false }}
-/>
+        name="MisSolicitudes"
+        component={MisSolicitudesScreen}
+        options={{ headerShown: false }}
+      />
 
-<Stack.Screen
-  name="SolicitudAdopcion"
-  component={SolicitudAdopcionScreen}
-  options={{ headerShown: false }} // 👈 ESTA ES LA CLAVE
-/>
+      <Stack.Screen
+        name="Fundaciones"
+        component={FundacionesScreen}
+        options={{ title: 'Fundaciones' }}
+      />
+
+      <Stack.Screen
+        name="Historial"
+        component={HistorialAdopcionesScreen}
+        options={{ title: 'Historial adopciones' }}
+      />
+
+      <Stack.Screen
+        name="Mascotas"
+        component={MascotasScreen}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="SolicitudAdopcion"
+        component={SolicitudAdopcionScreen}
+        options={{ headerShown: false }}
+      />
 
     </Stack.Navigator>
   );
