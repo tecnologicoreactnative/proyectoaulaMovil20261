@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Image,
+  Platform,
+  Modal,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../colors";
 import { LOAN_STATUS_CONFIG, formatDate, STATES } from "../../constants/loans";
 import useAdminLoans from "../../hooks/useAdminLoans";
+import BookCard from "../book/BookCard";
 
 const filterOptions = [
   { key: null, label: "Todos" },
@@ -91,6 +94,234 @@ function FilterBar({ filterStatus, setFilterStatus }) {
   );
 }
 
+function DateRangeFilter({ filterDateFrom, setFilterDateFrom, filterDateTo, setFilterDateTo }) {
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
+
+  const formatDateDisplay = (date) => {
+    if (!date) return "";
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const handleFromChange = (event, selectedDate) => {
+    setShowFromPicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setFilterDateFrom(selectedDate);
+    }
+  };
+
+  const handleToChange = (event, selectedDate) => {
+    setShowToPicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setFilterDateTo(selectedDate);
+    }
+  };
+
+  const clearFrom = () => setFilterDateFrom(null);
+  const clearTo = () => setFilterDateTo(null);
+
+  const hasDateFilter = filterDateFrom || filterDateTo;
+
+  return (
+    <View style={styles.dateFilterContainer}>
+      <View style={styles.dateFilterRow}>
+        <View style={styles.dateFilterInputGroup}>
+          <Text style={styles.dateFilterLabel}>Desde</Text>
+          <TouchableOpacity
+            style={styles.dateFilterInput}
+            onPress={() => setShowFromPicker(true)}
+          >
+            <Text style={styles.dateFilterText}>
+              {filterDateFrom ? formatDateDisplay(filterDateFrom) : "Seleccionar"}
+            </Text>
+            <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+          {filterDateFrom && (
+            <TouchableOpacity onPress={clearFrom} style={styles.clearBtn}>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.dateFilterInputGroup}>
+          <Text style={styles.dateFilterLabel}>Hasta</Text>
+          <TouchableOpacity
+            style={styles.dateFilterInput}
+            onPress={() => setShowToPicker(true)}
+          >
+            <Text style={styles.dateFilterText}>
+              {filterDateTo ? formatDateDisplay(filterDateTo) : "Seleccionar"}
+            </Text>
+            <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+          {filterDateTo && (
+            <TouchableOpacity onPress={clearTo} style={styles.clearBtn}>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {showFromPicker && (
+        <DateTimePicker
+          value={filterDateFrom || new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleFromChange}
+        />
+      )}
+
+      {showToPicker && (
+        <DateTimePicker
+          value={filterDateTo || new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleToChange}
+        />
+      )}
+
+      {hasDateFilter && (
+        <View style={styles.activeFilterIndicators}>
+          {filterDateFrom && (
+            <View style={styles.filterChipIndicator}>
+              <Text style={styles.filterChipIndicatorText}>
+                Desde: {formatDateDisplay(filterDateFrom)}
+              </Text>
+              <TouchableOpacity onPress={clearFrom}>
+                <Ionicons name="close" size={12} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          )}
+          {filterDateTo && (
+            <View style={styles.filterChipIndicator}>
+              <Text style={styles.filterChipIndicatorText}>
+                Hasta: {formatDateDisplay(filterDateTo)}
+              </Text>
+              <TouchableOpacity onPress={clearTo}>
+                <Ionicons name="close" size={12} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function UserFilter({ users, filterUserId, setFilterUserId }) {
+  const [showPicker, setShowPicker] = useState(false);
+  const userList = Object.values(users || {})
+    .filter((u) => u.displayName || u.email)
+    .sort((a, b) => (a.displayName || a.email || "").localeCompare(b.displayName || b.email || ""));
+
+  const clearUser = () => {
+    setFilterUserId(null);
+    setShowPicker(false);
+  };
+
+  const selectedUser = filterUserId ? users[filterUserId] : null;
+
+  return (
+    <View style={styles.userFilterContainer}>
+      <TouchableOpacity
+        style={styles.userFilterTrigger}
+        onPress={() => setShowPicker(true)}
+      >
+        <Ionicons name="person-outline" size={14} color={selectedUser ? colors.primary : colors.textMuted} />
+        <Text style={[styles.userFilterTriggerText, selectedUser && styles.userFilterTriggerTextActive]}>
+          {selectedUser
+            ? (selectedUser.displayName || selectedUser.email || "Usuario")
+            : "Filtrar por usuario"}
+        </Text>
+        <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+      </TouchableOpacity>
+
+      <Modal visible={showPicker} transparent animationType="fade" onRequestClose={() => setShowPicker(false)}>
+        <TouchableOpacity
+          style={styles.userModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPicker(false)}
+        >
+          <View style={styles.userModalContent}>
+            <View style={styles.userModalHeader}>
+              <Text style={styles.userModalTitle}>Seleccionar usuario</Text>
+              <TouchableOpacity onPress={() => setShowPicker(false)}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.userModalScroll} keyboardShouldPersistTaps="handled">
+              <TouchableOpacity
+                style={[styles.userModalItem, !selectedUser && styles.userModalItemActive]}
+                onPress={() => {
+                  setFilterUserId(null);
+                  setShowPicker(false);
+                }}
+              >
+                <Ionicons name="people-outline" size={18} color={!selectedUser ? colors.primary : colors.textMuted} />
+                <Text style={[styles.userModalItemText, !selectedUser && styles.userModalItemTextActive]}>
+                  Todos los usuarios
+                </Text>
+                {!selectedUser && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+              </TouchableOpacity>
+
+              <View style={styles.userModalDivider} />
+
+              {userList.map((u) => {
+                const isSelected = filterUserId === u.uid;
+                return (
+                  <TouchableOpacity
+                    key={u.uid}
+                    style={[styles.userModalItem, isSelected && styles.userModalItemActive]}
+                    onPress={() => {
+                      setFilterUserId(u.uid);
+                      setShowPicker(false);
+                    }}
+                  >
+                    <View style={styles.userModalAvatar}>
+                      <Ionicons name="person" size={16} color={isSelected ? colors.primary : colors.textMuted} />
+                    </View>
+                    <View style={styles.userModalItemInfo}>
+                      <Text style={[styles.userModalItemText, isSelected && styles.userModalItemTextActive]}>
+                        {u.displayName || "Sin nombre"}
+                      </Text>
+                      {u.email ? (
+                        <Text style={styles.userModalItemSubtext}>{u.email}</Text>
+                      ) : null}
+                    </View>
+                    {isSelected && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                  </TouchableOpacity>
+                );
+              })}
+
+              {userList.length === 0 && (
+                <View style={styles.userModalEmpty}>
+                  <Ionicons name="people-outline" size={32} color={colors.textMuted} />
+                  <Text style={styles.userModalEmptyText}>No hay usuarios registrados</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {filterUserId && (
+        <View style={styles.filterChipIndicator}>
+          <Text style={styles.filterChipIndicatorText}>
+            Usuario: {users[filterUserId]?.displayName || users[filterUserId]?.email}
+          </Text>
+          <TouchableOpacity onPress={clearUser}>
+            <Ionicons name="close" size={12} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function StatusBadge({ status }) {
   const config = LOAN_STATUS_CONFIG[status] || {
     label: status,
@@ -136,14 +367,6 @@ function ActionButton({ label, onPress, variant }) {
 }
 
 function LoanCard({ loan, onApprove, onMarkDelivered, onMarkReturned, onCancel }) {
-  const [imageError, setImageError] = useState(false);
-  const config = LOAN_STATUS_CONFIG[loan.status] || {
-    label: loan.status,
-    icon: "help-outline",
-    color: colors.textMuted,
-    bg: colors.surfaceAlt,
-  };
-
   const renderActions = () => {
     switch (loan.status) {
       case STATES.REQUESTED:
@@ -194,61 +417,40 @@ function LoanCard({ loan, onApprove, onMarkDelivered, onMarkReturned, onCancel }
   };
 
   return (
-    <View style={styles.card}>
-      {/* Book Cover */}
-      <View style={styles.coverContainer}>
-        {loan.book?.image && !imageError ? (
-          <Image
-            source={{ uri: loan.book.image }}
-            style={styles.cover}
-            resizeMode="cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <View style={styles.coverPlaceholder}>
-            <Ionicons name="book" size={24} color={colors.textMuted} />
-          </View>
+    <BookCard
+      title={loan.book?.title || "Libro eliminado"}
+      author={loan.book?.author || "Sin autor"}
+      image={loan.book?.image}
+      headerSlot={<StatusBadge status={loan.status} />}
+    >
+      {/* Borrower info */}
+      <View style={styles.borrowerRow}>
+        <Ionicons name="person-outline" size={11} color={colors.textMuted} />
+        <Text style={styles.borrowerEmail} numberOfLines={1}>
+          {loan.borrower?.firstName
+            ? `${loan.borrower.firstName} ${loan.borrower.lastName}`
+            : loan.borrower?.email || "Usuario desconocido"}
+        </Text>
+        {loan.borrower?.delayCount > 0 && (
+          <Ionicons name="warning" size={11} color={colors.warning} />
+        )}
+        {loan.borrower?.penaltyUntil?.toDate?.() > new Date() && (
+          <Ionicons name="ban" size={11} color={colors.error} />
         )}
       </View>
 
-      {/* Info */}
-      <View style={styles.cardInfo}>
-        <StatusBadge status={loan.status} />
+      {/* Date info */}
+      <Text style={styles.dateLabel}>
+        Solicitado: {formatDate(loan.requestedAt)}
+        {loan.deliveredAt ? ` · Entrega: ${formatDate(loan.deliveredAt)}` : ""}
+        {loan.maxReturnDate
+          ? ` · Tope: ${formatDate(loan.maxReturnDate)}`
+          : ""}
+      </Text>
 
-        <Text style={styles.bookTitle} numberOfLines={1}>
-          {loan.book?.title || "Libro eliminado"}
-        </Text>
-        <Text style={styles.bookAuthor} numberOfLines={1}>
-          {loan.book?.author || "Sin autor"}
-        </Text>
-        <View style={styles.borrowerRow}>
-          <Ionicons name="person-outline" size={11} color={colors.textMuted} />
-          <Text style={styles.borrowerEmail} numberOfLines={1}>
-            {loan.borrower?.firstName
-              ? `${loan.borrower.firstName} ${loan.borrower.lastName}`
-              : loan.borrower?.email || "Usuario desconocido"}
-          </Text>
-          {loan.borrower?.delayCount > 0 && (
-            <Ionicons name="warning" size={11} color={colors.warning} />
-          )}
-          {loan.borrower?.penaltyUntil?.toDate?.() > new Date() && (
-            <Ionicons name="ban" size={11} color={colors.error} />
-          )}
-        </View>
-
-        {/* Date info */}
-        <Text style={styles.dateLabel}>
-          Solicitado: {formatDate(loan.requestedAt)}
-          {loan.deliveredAt ? ` · Entrega: ${formatDate(loan.deliveredAt)}` : ""}
-          {loan.maxReturnDate
-            ? ` · Tope: ${formatDate(loan.maxReturnDate)}`
-            : ""}
-        </Text>
-
-        {/* Action Buttons */}
-        {renderActions()}
-      </View>
-    </View>
+      {/* Action Buttons */}
+      {renderActions()}
+    </BookCard>
   );
 }
 
@@ -260,12 +462,72 @@ export default function AdminLoansList() {
     loading,
     filterStatus,
     setFilterStatus,
+    filterDateFrom,
+    setFilterDateFrom,
+    filterDateTo,
+    setFilterDateTo,
+    filterUserId,
+    setFilterUserId,
     stats,
     approveLoan,
     markDelivered,
     markReturned,
     cancelLoan,
+    users,
   } = useAdminLoans();
+
+  // ── Loading state ──────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Cargando préstamos...</Text>
+      </View>
+    );
+  }
+
+  const hasActiveFilters =
+    filterStatus !== null ||
+    filterDateFrom !== null ||
+    filterDateTo !== null ||
+    filterUserId !== null;
+
+  const clearAllFilters = () => {
+    setFilterStatus(null);
+    setFilterDateFrom(null);
+    setFilterDateTo(null);
+    setFilterUserId(null);
+  };
+
+  const renderFilters = () => (
+    <>
+      <FilterBar
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+      />
+      <DateRangeFilter
+        filterDateFrom={filterDateFrom}
+        setFilterDateFrom={setFilterDateFrom}
+        filterDateTo={filterDateTo}
+        setFilterDateTo={setFilterDateTo}
+      />
+      <UserFilter
+        users={users}
+        filterUserId={filterUserId}
+        setFilterUserId={setFilterUserId}
+      />
+      {hasActiveFilters && (
+        <TouchableOpacity
+          style={styles.clearAllBtn}
+          onPress={clearAllFilters}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="close-circle-outline" size={14} color={colors.error} />
+          <Text style={styles.clearAllBtnText}>Limpiar filtros</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  );
 
   // ── Loading state ──────────────────────────────────────────────────
   if (loading) {
@@ -282,10 +544,7 @@ export default function AdminLoansList() {
     return (
       <ScrollView style={styles.container}>
         <StatsBar stats={stats} />
-        <FilterBar
-          filterStatus={filterStatus}
-          setFilterStatus={setFilterStatus}
-        />
+        {renderFilters()}
         <View style={styles.centered}>
           <View style={styles.emptyIcon}>
             <Ionicons name="file-tray-outline" size={48} color={colors.textMuted} />
@@ -297,7 +556,7 @@ export default function AdminLoansList() {
           </Text>
           <Text style={styles.emptySubtitle}>
             {filterStatus
-              ? "Prueba con otro filtro"
+              ? "Probá con otros filtros"
               : "Los préstamos aparecerán aquí cuando los usuarios soliciten libros"}
           </Text>
         </View>
@@ -313,10 +572,7 @@ export default function AdminLoansList() {
       showsVerticalScrollIndicator={false}
     >
       <StatsBar stats={stats} />
-      <FilterBar
-        filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
-      />
+      {renderFilters()}
 
       <View style={styles.loansList}>
         {filteredLoans.map((loan) => (
@@ -425,39 +681,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  // ── Loan Card ──────────────────────────────────────────────────────
-  card: {
-    flexDirection: "row",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  coverContainer: {
-    marginRight: 12,
-    overflow: "hidden",
-  },
-  cover: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
-  },
-  coverPlaceholder: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: colors.surfaceAlt,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardInfo: {
-    flex: 1,
-    gap: 3,
-  },
+  // ── Loan Card (usa BookCard para cover + info) ──────────────────────
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -471,15 +695,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 9,
     fontWeight: "600",
-  },
-  bookTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  bookAuthor: {
-    fontSize: 13,
-    color: colors.textLight,
   },
   borrowerRow: {
     flexDirection: "row",
@@ -522,6 +737,203 @@ const styles = StyleSheet.create({
   },
   actionBtnTextLight: {
     color: colors.surface,
+  },
+
+  // ── Date Range Filter ───────────────────────────────────────────────
+  dateFilterContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  dateFilterRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  dateFilterInputGroup: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  dateFilterLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+    fontWeight: "500",
+  },
+  dateFilterInput: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  dateFilterText: {
+    fontSize: 13,
+    color: colors.text,
+  },
+  clearBtn: {
+    padding: 2,
+  },
+  activeFilterIndicators: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 8,
+  },
+  filterChipIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary + "18",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    gap: 4,
+  },
+  filterChipIndicatorText: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: "500",
+  },
+
+  // ── User Filter ────────────────────────────────────────────────────
+  userFilterContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  userFilterTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  userFilterTriggerText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  userFilterTriggerTextActive: {
+    color: colors.primary,
+    fontWeight: "600",
+  },
+  userModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  userModalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    width: "100%",
+    maxWidth: 400,
+    maxHeight: "80%",
+    paddingBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  userModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  userModalTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.text,
+  },
+  userModalScroll: {
+    maxHeight: 400,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+  },
+  userModalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 2,
+  },
+  userModalItemActive: {
+    backgroundColor: colors.primary + "12",
+  },
+  userModalItemInfo: {
+    flex: 1,
+  },
+  userModalItemText: {
+    fontSize: 15,
+    color: colors.text,
+    fontWeight: "500",
+  },
+  userModalItemTextActive: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
+  userModalItemSubtext: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+  userModalAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.surfaceAlt,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  userModalDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 4,
+    marginHorizontal: 4,
+  },
+  userModalEmpty: {
+    alignItems: "center",
+    paddingVertical: 32,
+    gap: 8,
+  },
+  userModalEmptyText: {
+    fontSize: 14,
+    color: colors.textMuted,
+  },
+
+  // ── Clear All Filters ──────────────────────────────────────────────
+  clearAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.error + "40",
+    backgroundColor: colors.error + "0A",
+    gap: 6,
+  },
+  clearAllBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.error,
   },
 
   // ── Empty State ────────────────────────────────────────────────────

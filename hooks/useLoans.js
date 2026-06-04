@@ -10,10 +10,10 @@ import {
   onSnapshot,
   Timestamp,
 } from "firebase/firestore";
-import { STATES } from "../constants/loans";
+import { STATES, MAX_ACTIVE_LOANS, LOAN_DURATION_DAYS } from "../constants/loans";
 import { db } from "../firebase";
 
-export { STATES };
+export { STATES, MAX_ACTIVE_LOANS, LOAN_DURATION_DAYS };
 
 export default function useLoans() {
   const [loading, setLoading] = useState(false);
@@ -36,10 +36,25 @@ export default function useLoans() {
           throw new Error("Libro no disponible");
         }
 
+        // Check active loan limit on user doc
+        const userRef = doc(db, "users", borrowerId);
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) throw new Error("Usuario no encontrado");
+        const userData = userSnap.data();
+        const activeLoansCount = userData.activeLoansCount || 0;
+        if (activeLoansCount >= MAX_ACTIVE_LOANS) {
+          throw new Error("Ya tenés 3 préstamos activos. Devolvé un libro antes de solicitar otro.");
+        }
+
         // Mark book as not available (reserve for this request)
         transaction.update(bookRef, {
           available: false,
           updatedAt: serverTimestamp(),
+        });
+
+        // Increment active loan counter on user
+        transaction.update(userRef, {
+          activeLoansCount: activeLoansCount + 1,
         });
 
         // Create loan record with requested status
@@ -67,6 +82,7 @@ export default function useLoans() {
       const loanRef = doc(db, "loans", loanId);
 
       await runTransaction(db, async (transaction) => {
+        // ── 1. ALL READS FIRST ──────────────────────────────────────
         const loanSnap = await transaction.get(loanRef);
         if (!loanSnap.exists()) throw new Error("Préstamo no encontrado");
         const loan = loanSnap.data();
@@ -87,6 +103,15 @@ export default function useLoans() {
         const bookRef = doc(db, "books", loan.bookId);
         const bookSnap = await transaction.get(bookRef);
         if (!bookSnap.exists()) throw new Error("Libro del préstamo no encontrado");
+
+        // If returning: read borrower data BEFORE any write
+        let borrowerSnap = null;
+        if (newStatus === STATES.RETURNED) {
+          const borrowerRef = doc(db, "users", loan.borrowerId);
+          borrowerSnap = await transaction.get(borrowerRef);
+        }
+
+        // ── 2. ALL WRITES AFTER ─────────────────────────────────────
 
         // If moving to returned, mark book available
         if (newStatus === STATES.RETURNED) {
@@ -116,27 +141,32 @@ export default function useLoans() {
           const returnedAtDate = new Date();
           updates.returnedAt = serverTimestamp();
 
+          // Decrement active loan counter (borrowerSnap ya se leyó arriba)
+          const borrowerRef = doc(db, "users", loan.borrowerId);
+          if (borrowerSnap && borrowerSnap.exists()) {
+            const currentCount = borrowerSnap.data().activeLoansCount || 0;
+            transaction.update(borrowerRef, {
+              activeLoansCount: Math.max(0, currentCount - 1),
+            });
+          }
+
           // Check delay penalty
           const maxReturn = loan.maxReturnDate;
-          if (maxReturn) {
+          if (maxReturn && borrowerSnap && borrowerSnap.exists()) {
             const maxReturnDate = maxReturn.toDate ? maxReturn.toDate() : new Date(maxReturn);
             if (returnedAtDate > maxReturnDate) {
-              const borrowerRef = doc(db, "users", loan.borrowerId);
-              const borrowerSnap = await transaction.get(borrowerRef);
-              if (borrowerSnap.exists()) {
-                const borrowerData = borrowerSnap.data();
-                const currentDelayCount = borrowerData.delayCount || 0;
-                const newDelayCount = currentDelayCount + 1;
-                const userUpdates = {
-                  delayCount: newDelayCount,
-                };
-                if (newDelayCount >= 3) {
-                  userUpdates.penaltyUntil = Timestamp.fromDate(
-                    new Date(returnedAtDate.getTime() + 30 * 24 * 60 * 60 * 1000)
-                  );
-                }
-                transaction.update(borrowerRef, userUpdates);
+              const borrowerData = borrowerSnap.data();
+              const currentDelayCount = borrowerData.delayCount || 0;
+              const newDelayCount = currentDelayCount + 1;
+              const userUpdates = {
+                delayCount: newDelayCount,
+              };
+              if (newDelayCount >= 3) {
+                userUpdates.penaltyUntil = Timestamp.fromDate(
+                  new Date(returnedAtDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+                );
               }
+              transaction.update(borrowerRef, userUpdates);
             }
           }
         }
@@ -172,6 +202,7 @@ export default function useLoans() {
       const loanRef = doc(db, "loans", loanId);
 
       await runTransaction(db, async (transaction) => {
+        // ── 1. ALL READS FIRST ──────────────────────────────────────
         const loanSnap = await transaction.get(loanRef);
         if (!loanSnap.exists()) throw new Error("Préstamo no encontrado");
         const loan = loanSnap.data();
@@ -196,11 +227,24 @@ export default function useLoans() {
         const bookSnap = await transaction.get(bookRef);
         if (!bookSnap.exists()) throw new Error("Libro del préstamo no encontrado");
 
+        const borrowerRef = doc(db, "users", loan.borrowerId);
+        const borrowerSnap = await transaction.get(borrowerRef);
+
+        // ── 2. ALL WRITES AFTER ─────────────────────────────────────
+
         // Make book available again
         transaction.update(bookRef, {
           available: true,
           updatedAt: serverTimestamp(),
         });
+
+        // Decrement active loan counter on user
+        if (borrowerSnap.exists()) {
+          const currentCount = borrowerSnap.data().activeLoansCount || 0;
+          transaction.update(borrowerRef, {
+            activeLoansCount: Math.max(0, currentCount - 1),
+          });
+        }
 
         // Update loan to cancelled status
         transaction.update(loanRef, {

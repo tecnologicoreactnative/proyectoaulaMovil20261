@@ -30,30 +30,20 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-dev-client",
       "expo-font",
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
+          "icon": "./assets/logo.png",
           "color": "#E6F4FE",
           "sounds": []
-        }
-      ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "googleServicesFile": "./google-services.json"
-          }
         }
       ]
     ],

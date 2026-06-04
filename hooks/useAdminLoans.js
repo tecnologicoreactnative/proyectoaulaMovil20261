@@ -30,6 +30,9 @@ export default function useAdminLoans() {
   const [loading, setLoading] = useState(true);
   const [userMap, setUserMap] = useState({});
   const [filterStatus, setFilterStatus] = useState(null);
+  const [filterDateFrom, setFilterDateFrom] = useState(null);
+  const [filterDateTo, setFilterDateTo] = useState(null);
+  const [filterUserId, setFilterUserId] = useState(null);
 
   // ── 1. Fetch ALL users on mount (una sola vez) ──────────────────
   useEffect(() => {
@@ -128,11 +131,38 @@ export default function useAdminLoans() {
     }));
   }, [loans, bookMap, userMap]);
 
-  // ── 5. Derive filtered loans según filterStatus ─────────────────
+  // ── 5. Derive filtered loans según filterStatus, date range, user ─────
   const filteredLoans = useMemo(() => {
-    if (!filterStatus) return allLoans;
-    return allLoans.filter((loan) => loan.status === filterStatus);
-  }, [allLoans, filterStatus]);
+    let result = allLoans;
+
+    // Status filter
+    if (filterStatus) {
+      result = result.filter((loan) => loan.status === filterStatus);
+    }
+
+    // Date range filter
+    if (filterDateFrom) {
+      result = result.filter(
+        (loan) =>
+          loan.requestedAt &&
+          loan.requestedAt.getTime() >= filterDateFrom.getTime()
+      );
+    }
+    if (filterDateTo) {
+      result = result.filter(
+        (loan) =>
+          loan.requestedAt &&
+          loan.requestedAt.getTime() <= filterDateTo.getTime()
+      );
+    }
+
+    // User filter
+    if (filterUserId) {
+      result = result.filter((loan) => loan.borrowerId === filterUserId);
+    }
+
+    return result;
+  }, [allLoans, filterStatus, filterDateFrom, filterDateTo, filterUserId]);
 
   // ── 6. Compute stats por estado usando reduce ───────────────────
   const stats = useMemo(() => {
@@ -333,6 +363,12 @@ export default function useAdminLoans() {
     loading,
     filterStatus,
     setFilterStatus,
+    filterDateFrom,
+    setFilterDateFrom,
+    filterDateTo,
+    setFilterDateTo,
+    filterUserId,
+    setFilterUserId,
     stats,
     approveLoan,
     markDelivered,

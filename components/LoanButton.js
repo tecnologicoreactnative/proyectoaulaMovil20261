@@ -3,6 +3,7 @@ import { Alert, View } from "react-native";
 import PrimaryButton from "./PrimaryButton";
 import useLoans from "../hooks/useLoans";
 import { useAuth } from "../contexts/AuthContext";
+import { LOAN_DURATION_DAYS } from "../constants/loans";
 
 // Loan states
 const STATES = {
@@ -94,15 +95,38 @@ export default function LoanButton({ book }) {
       }
     }
 
-    setBusy(true);
-    try {
-      await requestLoan(book.id, user.uid);
-      Alert.alert("Listo", "Préstamo solicitado correctamente.");
-    } catch (e) {
-      Alert.alert("Error", e.message || "No se pudo solicitar el préstamo");
-    } finally {
-      setBusy(false);
-    }
+    const formatDisplayDate = (date) => {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    const returnDate = new Date();
+    returnDate.setDate(returnDate.getDate() + LOAN_DURATION_DAYS);
+    const returnDateStr = formatDisplayDate(returnDate);
+
+    Alert.alert(
+      "Confirmar solicitud",
+      `Si se aprueba, deberías devolver el libro antes del ${returnDateStr}. ¿Querés continuar?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Solicitar",
+          onPress: async () => {
+            setBusy(true);
+            try {
+              await requestLoan(book.id, user.uid);
+              Alert.alert("Listo", "Préstamo solicitado correctamente.");
+            } catch (e) {
+              Alert.alert("Error", e.message || "No se pudo solicitar el préstamo");
+            } finally {
+              setBusy(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // Determine button state

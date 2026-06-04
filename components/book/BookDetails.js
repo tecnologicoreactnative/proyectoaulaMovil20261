@@ -42,6 +42,13 @@ export default function BookDetails({ book }) {
     setActiveLoan(loan || null);
   }, [userLoans, book?.id]);
 
+  // Extraer todas las categorías (soporta tanto el nuevo array como el legacy string)
+  const categories = Array.isArray(book.categories) && book.categories.length > 0
+    ? book.categories
+    : book.category
+    ? [book.category]
+    : [];
+
   if (!book) {
     return (
       <View style={styles.emptyContainer}>
@@ -80,21 +87,15 @@ export default function BookDetails({ book }) {
         {/* Gradient Overlay */}
         <View style={styles.imageOverlay} />
         
-        {/* Loan Status Badge - Solo Disponible/No disponible */}
+        {/* Status Badge */}
         <View style={[
           styles.availabilityBadge,
           book.available ? styles.badgeAvailable : styles.badgeUnavailable,
         ]}>
-          <View style={styles.badgeContent}>
-            <Ionicons
-              name={book.available ? "checkmark-circle" : "close-circle"}
-              size={18}
-              color={colors.surface}
-            />
-            <Text style={[styles.availabilityText, { color: colors.surface }]}>
-              {book.available ? "Disponible" : "No disponible"}
-            </Text>
-          </View>
+          <View style={[styles.availDot, { backgroundColor: colors.surface }]} />
+          <Text style={[styles.availText, { color: colors.surface }]}>
+            {book.available ? "Disponible" : "No disponible"}
+          </Text>
         </View>
       </View>
 
@@ -107,19 +108,29 @@ export default function BookDetails({ book }) {
           <View style={styles.iconContainer}>
             <Ionicons name="person-outline" size={18} color={colors.primary} />
           </View>
-          <Text style={styles.infoLabel}>Autor</Text>
-          <Text style={styles.infoValue}>{book.author}</Text>
+          <View style={styles.infoTextBlock}>
+            <Text style={styles.infoLabel}>Autor</Text>
+            <Text style={styles.infoValue}>{book.author}</Text>
+          </View>
         </View>
 
-        {/* Category if exists */}
-        {book.category && (
+        {/* Categories — muestra TODAS las categorías */}
+        {categories.length > 0 && (
           <View style={styles.infoRow}>
             <View style={styles.iconContainer}>
               <Ionicons name="pricetag-outline" size={18} color={colors.primary} />
             </View>
-            <Text style={styles.infoLabel}>Categoría</Text>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryText}>{book.category}</Text>
+            <View style={styles.infoTextBlock}>
+              <Text style={styles.infoLabel}>
+                {categories.length === 1 ? "Categoría" : "Categorías"}
+              </Text>
+              <View style={styles.categoriesRow}>
+                {categories.map((cat) => (
+                  <View key={cat} style={styles.categoryBadge}>
+                    <Text style={styles.categoryText}>{cat}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         )}
@@ -130,7 +141,7 @@ export default function BookDetails({ book }) {
         {/* Description */}
         <View style={styles.descriptionSection}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="document-text-outline" size={20} color={colors.text} />
+            <Ionicons name="document-text-outline" size={18} color={colors.text} />
             <Text style={styles.sectionTitle}>Descripción</Text>
           </View>
           <Text style={styles.descriptionText}>
@@ -208,27 +219,29 @@ const styles = StyleSheet.create({
   },
   availabilityBadge: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
+    bottom: 24,
+    left: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1.5,
-    shadowColor: "rgba(0,0,0,0.12)",
+    shadowColor: "rgba(0,0,0,0.15)",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 6,
   },
-  badgeContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 8,
+  availDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  availabilityText: {
+  availText: {
     fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: 0.4,
+    fontWeight: "700",
   },
   infoCard: {
     backgroundColor: colors.surface,
@@ -258,25 +271,33 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: colors.primary + "14",
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.primary + "12",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
   },
+  infoTextBlock: {
+    flex: 1,
+  },
   infoLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textMuted,
-    width: 72,
     fontWeight: "500",
+    marginBottom: 2,
   },
   infoValue: {
-    flex: 1,
     fontSize: 15,
     fontWeight: "600",
     color: colors.text,
+  },
+  categoriesRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 4,
   },
   categoryBadge: {
     backgroundColor: colors.surfaceAlt,
@@ -302,74 +323,30 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 14,
-    gap: 10,
+    marginBottom: 12,
+    gap: 8,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "700",
     color: colors.text,
-    letterSpacing: -0.2,
   },
   descriptionText: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textLight,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   buttonContainer: {
     marginTop: 24,
   },
   badgeAvailable: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: colors.success + "E0",
+    borderColor: colors.success,
   },
   badgeUnavailable: {
-    backgroundColor: colors.error,
+    backgroundColor: colors.error + "E0",
     borderColor: colors.error,
   },
 });
 
-// Helper functions for loan status display using Emerald/Zinc palette
-const getStatusBadgeStyle = (status) => {
-  // Neutral/queued requests use zinc-like neutral badge
-  switch (status) {
-    case STATES.REQUESTED:
-    case STATES.APPROVED:
-      return { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
-    case STATES.DELIVERED:
-      // Delivered uses Emerald emphasis
-      return { backgroundColor: colors.primaryLight, borderColor: colors.primary, iconColor: colors.primary };
-    case STATES.RETURNED:
-    case STATES.CANCELLED:
-    default:
-      // Returned or Cancelled and any default use a neutral zinc-like badge
-      return { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
-  }
-};
 
-const getAvailabilityBadgeStyle = (available) =>
-  available
-    ? { backgroundColor: colors.surfaceAlt, borderColor: colors.primary, iconColor: colors.primary }
-    : { backgroundColor: colors.surfaceAlt, borderColor: colors.border, iconColor: colors.textMuted };
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case STATES.REQUESTED: return "time-outline";
-    case STATES.APPROVED: return "checkmark-circle";
-    case STATES.DELIVERED: return "arrow-forward-circle";
-    case STATES.RETURNED: return "checkmark-done-circle";
-    case STATES.CANCELLED: return "close-circle";
-    default: return "checkmark-circle";
-  }
-};
-
-const getStatusText = (status) => {
-  switch (status) {
-    case STATES.REQUESTED: return "Solicitado";
-    case STATES.APPROVED: return "Aprobado";
-    case STATES.DELIVERED: return "Entregado";
-    case STATES.RETURNED: return "Devuelto";
-    case STATES.CANCELLED: return "Cancelado";
-    default: return "Disponible";
-  }
-};

@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, Image } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import useLoans from "../../hooks/useLoans";
 import useBooks from "../../hooks/useBooks";
 import { formatDate } from "../../constants/loans";
 import { colors } from "../colors";
+import BookCard from "../book/BookCard";
 
 // LoanHistoryList: muestra historial de préstamos devueltos
 const LoanHistoryList = () => {
   const { user } = useAuth();
   const { userLoans, userLoansLoading, subscribeToUserLoans, STATES } = useLoans();
   const { books } = useBooks();
-  const [imageErrors, setImageErrors] = useState({});
-
-  const handleImageError = (bookId) => {
-    setImageErrors((prev) => ({ ...prev, [bookId]: true }));
-  };
-
   useEffect(() => {
     if (user?.uid) {
       const unsubscribe = subscribeToUserLoans(user.uid);
@@ -31,52 +26,35 @@ const LoanHistoryList = () => {
 
   const renderItem = ({ item }) => {
     const book = getBookInfo(item.bookId);
-    
+    const isCancelled = item.status === STATES.CANCELLED;
+
     return (
-      <View key={item.id} style={styles.card}>
-        {/* Book Cover */}
-        <View style={styles.coverContainer}>
-          {book?.image && !imageErrors[book.id] ? (
-            <Image
-              source={{ uri: book.image }}
-              style={styles.coverImage}
-              resizeMode="cover"
-              onError={() => handleImageError(book.id)}
-            />
-          ) : (
-            <View style={styles.coverPlaceholder}>
-              <Ionicons name="book-outline" size={20} color={colors.textMuted} />
-            </View>
-          )}
-        </View>
-
-        {/* Card Content */}
-        <View style={styles.cardContent}>
-          {/* Status Badge */}
+      <BookCard
+        key={item.id}
+        title={book?.title || "Libro"}
+        author={book?.author || "Autor"}
+        image={book?.image}
+        headerSlot={
           <View style={styles.statusBadge}>
-            {item.status === STATES.CANCELLED ? (
-              <>
-                <Ionicons name="close-circle" size={10} color={colors.error} />
-                <Text style={[styles.statusText, { color: colors.error }]}>Cancelado</Text>
-              </>
-            ) : (
-              <>
-                <Ionicons name="checkmark-circle" size={10} color={colors.success} />
-                <Text style={styles.statusText}>Devuelto</Text>
-              </>
-            )}
+            <Ionicons
+              name={isCancelled ? "close-circle" : "checkmark-circle"}
+              size={10}
+              color={isCancelled ? colors.error : colors.success}
+            />
+            <Text style={[styles.statusText, { color: isCancelled ? colors.error : colors.success }]}>
+              {isCancelled ? "Cancelado" : "Devuelto"}
+            </Text>
           </View>
-
-          {/* Title & Author */}
-          <Text style={styles.bookTitle} numberOfLines={1}>{book?.title || "Libro"}</Text>
-          <Text style={styles.bookAuthor} numberOfLines={1}>{book?.author || "Autor"}</Text>
-
-          {/* Date */}
+        }
+      >
+        {/* Date */}
+        <View style={styles.dateContainer}>
+          <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
           <Text style={styles.dateText}>
             {formatDate(item.returnedAt)}
           </Text>
         </View>
-      </View>
+      </BookCard>
     );
   };
 
@@ -123,7 +101,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
     gap: 8,
   },
   headerTitle: {
@@ -142,70 +120,40 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   list: {
-    gap: 8,
-  },
-  card: {
-    flexDirection: "row",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  coverContainer: {
-    width: 50,
-    height: 70,
-    overflow: "hidden",
-  },
-  coverImage: {
-    width: "100%",
-    height: "100%",
-  },
-  coverPlaceholder: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: colors.surfaceAlt,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardContent: {
-    flex: 1,
-    padding: 8,
-    justifyContent: "space-between",
+    gap: 10,
   },
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
     gap: 4,
-    marginBottom: 4,
+    marginBottom: 6,
+    backgroundColor: colors.surfaceAlt,
   },
   statusText: {
     fontSize: 10,
-    color: colors.success,
     fontWeight: "600",
+    color: colors.success,
   },
-  bookTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  bookAuthor: {
-    fontSize: 10,
-    color: colors.textMuted,
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   dateText: {
-    fontSize: 10,
-    color: colors.textLight,
-    marginTop: 4,
+    fontSize: 11,
+    color: colors.textMuted,
   },
   emptyCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 16,
     gap: 10,
   },

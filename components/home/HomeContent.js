@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  useWindowDimensions,
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
@@ -48,9 +47,6 @@ export default function HomeContent({ navigation }) {
     return hasCategory && matchesQuery(b);
   });
 
-  // Fixed width for horizontal card
-  const cardWidth = useWindowDimensions().width - 32;
-
   // Stable header element to prevent remount of the search TextInput
   const headerElement = useMemo(
     () => (
@@ -67,14 +63,14 @@ export default function HomeContent({ navigation }) {
 
   const renderBookItem = useCallback(
     ({ item }) => (
-      <BookItem item={item} itemSize={cardWidth} navigation={navigation} />
+      <BookItem item={item} navigation={navigation} />
     ),
-    [cardWidth, navigation],
+    [navigation],
   );
 
   const renderSkeleton = useCallback(
-    () => <BookSkeleton size={cardWidth} />,
-    [cardWidth],
+    () => <BookSkeleton />,
+    [],
   );
 
   const renderFooter = useCallback(() => {

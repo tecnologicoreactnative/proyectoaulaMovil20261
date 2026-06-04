@@ -70,7 +70,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }) {
           <View style={styles.logoContainer}>
             <Image source={require("../../assets/logo.png")} style={{ width: 120, height: 120 }} />
           </View>
-          <Text style={styles.appTitle}>Biblioteca TDEA</Text>
+          <Text style={styles.appTitle}>Leero</Text>
           <Text style={styles.appSubtitle}>Tu biblioteca digital personal</Text>
         </View>
 

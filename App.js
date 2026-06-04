@@ -1,25 +1,31 @@
 import { useRef, useEffect, useCallback } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import messaging from "@react-native-firebase/messaging";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { RootNavigator } from "./stacks/";
-import { showLocalNotification } from "./hooks/useNotifications";
-
-/**
- * FCM Background Message Handler.
- * DEBE estar registrado fuera del componente (top-level).
- * FCM ya muestra la notificación en la bandeja automáticamente
- * cuando el payload incluye "notification".
- */
-messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-  console.log("App: Background FCM message:", remoteMessage?.data);
-});
+import { useNotificationResponse } from "./hooks/useNotifications";
+import useLoanNotifications from "./hooks/useLoanNotifications";
 
 /**
  * Contenido interno de la app que vive DENTRO del AuthProvider.
  */
 function AppContent() {
   const navigationRef = useRef(null);
+
+  // ── Iniciar listener de notificaciones de préstamos ────────────
+  // Escucha cambios en Firestore y envía push notifications
+  // cuando se detectan transiciones de estado en los préstamos.
+  useLoanNotifications();
+
+  /**
+   * useNotificationResponse — hook de Expo que centraliza el manejo
+   * de taps en notificaciones, cubriendo:
+   *   - Cold start (app terminada -> tap en noti -> abre)
+   *   - Background -> Foreground (tap en noti)
+   *   - Foreground (tap en noti mientras la app está abierta)
+   *
+   * Reemplaza: getInitialNotification + onNotificationOpenedApp
+   */
+  const { navigationData, clearNavigationData } = useNotificationResponse();
 
   /**
    * Navega a la pantalla correspondiente según los datos
@@ -55,47 +61,13 @@ function AppContent() {
     }
   }, []);
 
-  // ── FCM Foreground: mostrar notificación local ──────────────────
+  // ── Navegar cuando se recibe un tap en notificación ─────────────
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-      const { notification, data } = remoteMessage;
-      if (notification?.title || notification?.body) {
-        await showLocalNotification({
-          title: notification.title,
-          body: notification.body,
-          data: data || {},
-        });
-      }
-    });
-
-    return unsubscribe;
-  }, []);
-
-  // ── FCM Tap handlers (cold start + background→foreground) ──────
-  useEffect(() => {
-    // Cold start: la app se abrió al tocar una notificación
-    messaging()
-      .getInitialNotification()
-      .then((remoteMessage) => {
-        if (remoteMessage?.data) {
-          handleNavigation(remoteMessage.data);
-        }
-      })
-      .catch((error) => {
-        console.warn("App: getInitialNotification error:", error);
-      });
-
-    // Background → Foreground: usuario toca una notificación
-    const unsubscribe = messaging().onNotificationOpenedApp(
-      (remoteMessage) => {
-        if (remoteMessage?.data) {
-          handleNavigation(remoteMessage.data);
-        }
-      }
-    );
-
-    return unsubscribe;
-  }, [handleNavigation]);
+    if (navigationData) {
+      handleNavigation(navigationData);
+      clearNavigationData();
+    }
+  }, [navigationData, handleNavigation, clearNavigationData]);
 
   return (
     <NavigationContainer ref={navigationRef}>

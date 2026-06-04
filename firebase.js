@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // configuration values are now read from environment variables
 // you'll need to install and configure a dotenv solution
@@ -17,7 +18,16 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+
+// ── Auth con persistencia en AsyncStorage ─────────────────────────────
+// Sin esto, Firebase Auth usa persistencia en memoria en React Native,
+// lo que hace que la sesión se pierda al cerrar la app.
+// Con getReactNativePersistence, el token de autenticación se guarda
+// en AsyncStorage y se restaura automáticamente al reabrir la app.
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
 const db = getFirestore(app);
 const storage = getStorage(app);
 

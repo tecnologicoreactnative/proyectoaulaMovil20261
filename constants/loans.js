@@ -43,6 +43,10 @@ export const LOAN_STATUS_CONFIG = {
   },
 };
 
+// ── Loan limits ───────────────────────────────────────────────────
+export const MAX_ACTIVE_LOANS = 3;
+export const LOAN_DURATION_DAYS = 14;
+
 // ── Date formatter (es-CO locale) ─────────────────────────────────────
 export const formatDate = (date) => {
   if (!date) return "—";

@@ -72,6 +72,13 @@ export default function MenuModal({ visible, onClose }) {
             <Text style={styles.email}>{user?.email}</Text>
 
             <TouchableOpacity
+              onPress={() => handleNavigate("Home")}
+              style={styles.item}
+            >
+              <Text style={styles.itemText}>Inicio</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               onPress={() => handleNavigate("MisPrestamos")}
               style={styles.item}
             >
